@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: todo-config
+data:
+  # SQLite kullanılacağı için varsayılanı kullanır, AWS entegrasyonu eklenirse S3_ENDPOINT buraya girilebilir
+  S3_ENDPOINT: "http://localstack:4566"
+  DATABASE_URL: "sqlite:///./todos.db"

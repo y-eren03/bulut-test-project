@@ -1,0 +1,39 @@
+[tool.poetry]
+name = "todo-list-manager"
+version = "0.1.0"
+description = "To-Do List Manager for Test Engineering Project"
+authors = ["Yusuf <yusuf@example.com>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.104.1"
+uvicorn = {extras = ["standard"], version = "^0.24.0"}
+sqlalchemy = "^2.0.23"
+psycopg2-binary = "^2.9.9"
+boto3 = "^1.33.0"
+pydantic = "^2.5.2"
+pydantic-settings = "^2.1.0"
+jinja2 = "^3.1.2" # Frontend templating için
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.3"
+pytest-cov = "^4.1.0"
+pytest-asyncio = "^0.21.1"
+factory-boy = "^3.3.0"
+faker = "^20.1.0"
+testcontainers = {extras = ["postgres"], version = "^3.7.1"}
+httpx = "^0.25.2"
+pytest-playwright = "^0.4.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "--cov=src --cov-report=term-missing"
+pythonpath = ["."]
+testpaths = [
+    "tests",
+]

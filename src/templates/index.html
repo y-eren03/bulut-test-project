@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List Manager</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; }
+        .task { border-bottom: 1px solid #ccc; padding: 10px 0; }
+        .completed { text-decoration: line-through; color: gray; }
+        button { cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>To-Do List Manager</h1>
+    
+    <div>
+        <input type="text" id="taskTitle" placeholder="Görev Başlığı">
+        <input type="text" id="taskDesc" placeholder="Açıklama (opsiyonel)">
+        <button onclick="addTask()">Ekle</button>
+    </div>
+
+    <div id="taskList">
+        <!-- Görevler buraya JS ile eklenecek -->
+    </div>
+
+    <script>
+        const API_URL = "http://localhost:8000";
+
+        async function fetchTasks() {
+            const res = await fetch(`${API_URL}/tasks`);
+            const tasks = await res.json();
+            const list = document.getElementById("taskList");
+            list.innerHTML = "";
+            tasks.forEach(task => {
+                const div = document.createElement("div");
+                div.className = "task";
+                if (task.is_completed) div.classList.add("completed");
+                
+                div.innerHTML = `
+                    <strong>${task.title}</strong> - ${task.description || ''}
+                    ${!task.is_completed ? `<button onclick="completeTask(${task.id})">Tamamla</button>` : ''}
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        async function addTask() {
+            const title = document.getElementById("taskTitle").value;
+            const desc = document.getElementById("taskDesc").value;
+            if (!title) return alert("Başlık zorunludur!");
+
+            await fetch(`${API_URL}/tasks?title=${encodeURIComponent(title)}&description=${encodeURIComponent(desc)}`, {
+                method: "POST"
+            });
+            
+            document.getElementById("taskTitle").value = "";
+            document.getElementById("taskDesc").value = "";
+            fetchTasks();
+        }
+
+        async function completeTask(id) {
+            await fetch(`${API_URL}/tasks/${id}/complete`, { method: "PUT" });
+            fetchTasks();
+        }
+
+        // Sayfa yüklendiğinde görevleri çek
+        window.onload = fetchTasks;
+    </script>
+</body>
+</html>
