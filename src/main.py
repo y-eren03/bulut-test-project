@@ -1,11 +1,14 @@
-from fastapi import FastAPI, Depends, HTTPException, Request
+from fastapi import FastAPI, Depends, HTTPException, Request, UploadFile, File
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import os
+import tempfile
+from prometheus_fastapi_instrumentator import Instrumentator
 from . import models
+from src.services.s3 import upload_file
 
 # DB bağlantı URL'si (Çevresel değişkenden veya varsayılan SQLite)
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./todos.db")
@@ -18,6 +21,9 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="To-Do List Manager", description="Bulut Mimarilerinde Test Müh. Projesi")
+
+# Prometheus Metriklerini Ekle
+Instrumentator().instrument(app).expose(app)
 
 templates = Jinja2Templates(directory="src/templates")
 
@@ -64,3 +70,28 @@ def complete_task(task_id: int, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(task)
     return {"message": "Task completed", "task": task}
+
+@app.post("/tasks/{task_id}/attachment")
+def add_attachment(task_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
+    """Görefe bir dosya (attachment) ekler ve LocalStack S3'e yükler."""
+    task = db.query(models.Task).filter(models.Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    # Dosyayı geçici olarak diske kaydet
+    with tempfile.NamedTemporaryFile(delete=False) as tmp:
+        tmp.write(file.file.read())
+        tmp_path = tmp.name
+
+    # S3'e yükle
+    s3_url = upload_file(tmp_path, file.filename)
+    os.remove(tmp_path)
+
+    if not s3_url:
+        raise HTTPException(status_code=500, detail="Failed to upload file to S3")
+
+    task.attachment_url = s3_url
+    db.commit()
+    db.refresh(task)
+    
+    return {"message": "Attachment uploaded successfully", "task": task}

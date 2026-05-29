@@ -69,5 +69,55 @@
         }
       }
     }
+    ,{
+      "name": "Complete Task",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8000/tasks/1/complete",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "tasks",
+            "1",
+            "complete"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Upload Attachment",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": []
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:8000/tasks/1/attachment",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "tasks",
+            "1",
+            "attachment"
+          ]
+        }
+      }
+    }
   ]
 }
