@@ -41,8 +41,7 @@ jobs:
 
     - name: Run Lint
       run: |
-        # Lint işlemi (örnek olarak black eklenebilir, şimdilik pass)
-        echo "Linting passed"
+        black src tests --check
 
     - name: Run Pytest & Coverage
       env:
@@ -50,12 +49,28 @@ jobs:
       run: |
         pytest --cov=src --cov-fail-under=70
 
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install Newman
+      run: npm install -g newman
+
+    - name: Run Newman Tests & Smoke Test
+      env:
+        DATABASE_URL: postgresql://user:password@localhost:5432/tododb
+      run: |
+        # Start app in background
+        uvicorn src.main:app --host 0.0.0.0 --port 8000 &
+        sleep 5
+        
+        # Smoke test via curl
+        curl -f http://localhost:8000/health || exit 1
+        
+        # Run Newman
+        newman run postman/collection.json
+
     - name: Docker Build
       run: |
         docker build -t todo-list-manager:${{ github.sha }} .
-
-    - name: Minikube Deploy & Smoke Test
-      run: |
-        # Minikube CI'da doğrudan ayağa kaldırmak zor olabilir ancak konsept olarak:
-        echo "Deploying to Kubernetes (Mock)"
-        echo "Running Smoke tests (Mock)"

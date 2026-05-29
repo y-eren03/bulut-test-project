@@ -39,3 +39,31 @@ def test_create_and_read_task_integration(integration_db_session):
     assert saved_task is not None
     assert saved_task.id is not None
     assert saved_task.description == "Testing DB container"
+
+def test_update_task_status_integration(integration_db_session):
+    """PostgreSQL container'ı üzerinde görev durumunu güncellemeyi test eder."""
+    new_task = Task(title="Status Update Task")
+    integration_db_session.add(new_task)
+    integration_db_session.commit()
+    
+    task_id = new_task.id
+    task_to_update = integration_db_session.query(Task).filter(Task.id == task_id).first()
+    task_to_update.is_completed = True
+    integration_db_session.commit()
+    
+    updated_task = integration_db_session.query(Task).filter(Task.id == task_id).first()
+    assert updated_task.is_completed is True
+
+def test_delete_task_integration(integration_db_session):
+    """PostgreSQL container'ı üzerinde görev silmeyi test eder."""
+    new_task = Task(title="Delete Me Task")
+    integration_db_session.add(new_task)
+    integration_db_session.commit()
+    
+    task_id = new_task.id
+    task_to_delete = integration_db_session.query(Task).filter(Task.id == task_id).first()
+    integration_db_session.delete(task_to_delete)
+    integration_db_session.commit()
+    
+    deleted_task = integration_db_session.query(Task).filter(Task.id == task_id).first()
+    assert deleted_task is None
