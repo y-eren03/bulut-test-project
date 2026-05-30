@@ -3,6 +3,9 @@ version: '3.8'
 services:
   api:
     build: .
+    restart: on-failure
+    volumes:
+      - ./src:/app/src
     ports:
       - "8000:8000"
     environment:
@@ -22,7 +25,7 @@ services:
       - "5432:5432"
 
   localstack:
-    image: localstack/localstack
+    image: localstack/localstack:2.3.0
     ports:
       - "4566:4566"
     environment:
@@ -41,6 +44,8 @@ services:
 
   grafana:
     image: grafana/grafana
+    volumes:
+      - ./monitoring/grafana-datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
     ports:
       - "3000:3000"
     depends_on:
