@@ -5,6 +5,9 @@ import os
 # Uygulamanın çalıştığı varsayılan URL
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
 
+# Arka planda uvicorn sunucusunu başlatmak için live_server fixture'ını kullan
+pytestmark = pytest.mark.usefixtures("live_server")
+
 def test_homepage_loads(page: Page):
     """Ana sayfanın doğru şekilde yüklendiğini kontrol eder."""
     page.goto(BASE_URL)
@@ -38,10 +41,10 @@ def test_complete_task(page: Page):
     page.fill("#taskTitle", "Complete Me")
     page.click("button:has-text('Ekle')")
     
-    # Tamamla butonuna tıkla
-    page.click("button:has-text('Tamamla')")
+    # Sadece yeni eklediğimiz "Complete Me" görevinin yanındaki "Tamamla" butonuna tıkla
+    task_item = page.locator(".task", has_text="Complete Me").last
+    task_item.locator("button:has-text('Tamamla')").click()
     
-    # Görevin css class'ının .completed olduğunu kontrol et
+    # Görevin css class'ının .completed içerdiğini kontrol et
     import re
-    task_item = page.locator(".task").last
     expect(task_item).to_have_class(re.compile("completed"))

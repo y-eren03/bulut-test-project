@@ -3,6 +3,9 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+import threading
+import time
+import uvicorn
 from src.main import app, get_db
 from src.models import Base
 from tests.factories import TaskFactory, TagFactory
@@ -45,3 +48,37 @@ def client(db_session):
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()
+
+class Server(uvicorn.Server):
+    def install_signal_handlers(self):
+        pass
+
+@pytest.fixture(scope="session")
+def live_server():
+    """FastAPI uygulamasını E2E testleri için arka planda (ayrı bir thread'de) uvicorn ile çalıştırır (eğer port 8000 zaten aktif değilse)."""
+    import socket
+    # Port 8000'in zaten kullanımda olup olmadığını kontrol et
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        s.connect(("127.0.0.1", 8000))
+        s.close()
+        # Bağlantı başarılı oldu, yani sunucu zaten çalışıyor! Uvicorn başlatmaya gerek yok.
+        yield
+        return
+    except socket.error:
+        s.close()
+
+    config = uvicorn.Config(app, host="127.0.0.1", port=8000, log_level="error")
+    server = Server(config=config)
+    
+    thread = threading.Thread(target=server.run, daemon=True)
+    thread.start()
+    
+    # Sunucunun başlamasını bekle
+    while not server.started:
+        time.sleep(0.1)
+        
+    yield
+    
+    server.should_exit = True
+    thread.join(timeout=5)

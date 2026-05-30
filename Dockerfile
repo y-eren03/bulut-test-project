@@ -4,7 +4,7 @@ FROM python:3.11-slim AS builder
 WORKDIR /app
 
 # Poetry kurulumu
-RUN pip install poetry==1.7.1
+RUN pip install poetry==1.8.3
 
 # Bağımlılıkları kopyala ve kur
 COPY pyproject.toml poetry.lock* ./
