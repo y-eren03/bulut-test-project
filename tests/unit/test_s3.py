@@ -50,7 +50,7 @@ def test_upload_file_failure(mock_get_s3_client):
     mock_get_s3_client.return_value = mock_s3_client
     
     # Yükleme işlemi sırasında exception oluşsun
-    mock_s3_client.head_bucket.side_effect = Exception("Connection error")
+    mock_s3_client.upload_file.side_effect = Exception("Connection error")
     
     result = upload_file("test.txt", "test-object.txt")
     
