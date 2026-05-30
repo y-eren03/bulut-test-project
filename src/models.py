@@ -4,6 +4,7 @@ from sqlalchemy.orm import declarative_base, relationship
 # Temel model sınıfımız
 Base = declarative_base()
 
+
 class Task(Base):
     __tablename__ = "tasks"
 
@@ -15,6 +16,7 @@ class Task(Base):
 
     # Etiketler ile ilişki
     tags = relationship("Tag", back_populates="task", cascade="all, delete-orphan")
+
 
 class Tag(Base):
     __tablename__ = "tags"
