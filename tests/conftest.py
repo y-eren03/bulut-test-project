@@ -74,6 +74,17 @@ def live_server():
     except socket.error:
         s.close()
 
+    Base.metadata.create_all(bind=engine)
+    session = TestingSessionLocal()
+
+    def override_get_db():
+        try:
+            yield session
+        finally:
+            pass
+
+    app.dependency_overrides[get_db] = override_get_db
+
     config = uvicorn.Config(app, host="127.0.0.1", port=8000, log_level="error")
     server = Server(config=config)
 
@@ -88,3 +99,6 @@ def live_server():
 
     server.should_exit = True
     thread.join(timeout=5)
+    session.close()
+    app.dependency_overrides.clear()
+    Base.metadata.drop_all(bind=engine)

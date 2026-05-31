@@ -1,38 +1,42 @@
-import os
-import tempfile
-
-from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile
+from fastapi import FastAPI, Depends, HTTPException, Request, UploadFile, File
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from sqlalchemy.orm import Session
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+import os
+import tempfile
 from prometheus_fastapi_instrumentator import Instrumentator
-from sqlalchemy import create_engine, func
-from sqlalchemy.orm import Session, sessionmaker
-
-from src import models
+from . import models
+from .observability import setup_observability
 from src.services.s3 import upload_file
 
+# Demo Mesajı
+# DB bağlantı URL'si (Çevresel değişkenden veya varsayılan SQLite)
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./todos.db")
 
+# Veritabanı motoru ve oturumu
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False}
-    if DATABASE_URL.startswith("sqlite")
-    else {},
+    connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {},
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+# Tabloları oluştur
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="To-Do List Manager",
-    description="Cloud testing project with a security operations themed task board.",
-    version="0.2.0",
+    title="To-Do List Manager", description="Bulut Mimarilerinde Test Müh. Projesi"
 )
+
+# Prometheus Metriklerini Ekle
 Instrumentator().instrument(app).expose(app)
+setup_observability(app)
 
 templates = Jinja2Templates(directory="src/templates")
 
 
+# Dependency: Her istek için DB session oluştur ve kapat
 def get_db():
     db = SessionLocal()
     try:
@@ -41,88 +45,45 @@ def get_db():
         db.close()
 
 
-def serialize_task(task: models.Task) -> dict:
-    return {
-        "id": task.id,
-        "title": task.title,
-        "description": task.description,
-        "is_completed": task.is_completed,
-        "attachment_url": task.attachment_url,
-        "tags": [tag.name for tag in task.tags],
-    }
-
-
-def get_task_or_404(task_id: int, db: Session) -> models.Task:
-    task = db.query(models.Task).filter(models.Task.id == task_id).first()
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    return task
-
-
 @app.get("/", response_class=HTMLResponse)
 def read_root(request: Request):
-    try:
-        return templates.TemplateResponse(
-            request=request, name="index.html", context={}
-        )
-    except TypeError:
-        return templates.TemplateResponse("index.html", {"request": request})
+    """Ana sayfayı (HTML arayüzü) döndürür."""
+    return templates.TemplateResponse("index.html", {"request": request})
 
 
 @app.get("/health")
 def health_check():
-    return {"message": "To-Do List Manager API is running"}
+    """Basit bir sağlık kontrolü endpoint'i."""
+    return {"message": "To-Do List Manager API Çalışıyor!"}
 
 
 @app.get("/tasks")
 def list_tasks(db: Session = Depends(get_db)):
-    tasks = db.query(models.Task).order_by(models.Task.id.desc()).all()
+    """Tüm görevleri listeler."""
+    tasks = db.query(models.Task).all()
     return [serialize_task(task) for task in tasks]
 
 
 @app.post("/tasks")
 def create_task(
-    title: str, description: str | None = None, db: Session = Depends(get_db)
+    title: str, description: str = None, tags: str = None, db: Session = Depends(get_db)
 ):
-    clean_title = title.strip()
-    if not clean_title:
-        raise HTTPException(status_code=422, detail="Task title cannot be empty")
-
-    new_task = models.Task(title=clean_title, description=description)
+    """Yeni bir görev oluşturur."""
+    new_task = models.Task(title=title, description=description)
+    for tag_name in parse_tags(tags):
+        new_task.tags.append(models.Tag(name=tag_name))
     db.add(new_task)
     db.commit()
     db.refresh(new_task)
     return serialize_task(new_task)
 
 
-@app.get("/tasks/stats/overview")
-def task_stats(db: Session = Depends(get_db)):
-    total = db.query(models.Task).count()
-    completed = db.query(models.Task).filter(models.Task.is_completed.is_(True)).count()
-    open_count = total - completed
-    tag_rows = (
-        db.query(models.Tag.name, func.count(models.Tag.id))
-        .group_by(models.Tag.name)
-        .order_by(func.count(models.Tag.id).desc())
-        .all()
-    )
-    return {
-        "total": total,
-        "open": open_count,
-        "completed": completed,
-        "completion_rate": round((completed / total) * 100, 2) if total else 0,
-        "tags": [{"name": name, "count": count} for name, count in tag_rows],
-    }
-
-
-@app.get("/tasks/{task_id}")
-def get_task(task_id: int, db: Session = Depends(get_db)):
-    return serialize_task(get_task_or_404(task_id, db))
-
-
 @app.put("/tasks/{task_id}/complete")
 def complete_task(task_id: int, db: Session = Depends(get_db)):
-    task = get_task_or_404(task_id, db)
+    """Belirtilen görevi tamamlanmış olarak işaretler."""
+    task = db.query(models.Task).filter(models.Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
     task.is_completed = True
     db.commit()
     db.refresh(task)
@@ -131,42 +92,33 @@ def complete_task(task_id: int, db: Session = Depends(get_db)):
 
 @app.delete("/tasks/{task_id}")
 def delete_task(task_id: int, db: Session = Depends(get_db)):
-    task = get_task_or_404(task_id, db)
+    """Belirtilen görevi siler."""
+    task = db.query(models.Task).filter(models.Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
     db.delete(task)
     db.commit()
-    return {"message": "Task deleted", "task_id": task_id}
-
-
-@app.post("/tasks/{task_id}/tags")
-def add_task_tag(task_id: int, name: str, db: Session = Depends(get_db)):
-    task = get_task_or_404(task_id, db)
-    clean_name = name.strip().lower()
-    if not clean_name:
-        raise HTTPException(status_code=422, detail="Tag name cannot be empty")
-
-    existing = next((tag for tag in task.tags if tag.name == clean_name), None)
-    if not existing:
-        db.add(models.Tag(name=clean_name, task=task))
-        db.commit()
-        db.refresh(task)
-
-    return {"message": "Tag attached", "task": serialize_task(task)}
+    return {"message": "Task deleted"}
 
 
 @app.post("/tasks/{task_id}/attachment")
 def add_attachment(
     task_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)
 ):
-    task = get_task_or_404(task_id, db)
+    """Görefe bir dosya (attachment) ekler ve LocalStack S3'e yükler."""
+    task = db.query(models.Task).filter(models.Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
 
+    # Dosyayı geçici olarak diske kaydet
     with tempfile.NamedTemporaryFile(delete=False) as tmp:
         tmp.write(file.file.read())
         tmp_path = tmp.name
 
-    try:
-        s3_url = upload_file(tmp_path, file.filename)
-    finally:
-        os.remove(tmp_path)
+    # S3'e yükle
+    s3_url = upload_file(tmp_path, file.filename)
+    os.remove(tmp_path)
 
     if not s3_url:
         raise HTTPException(status_code=500, detail="Failed to upload file to S3")
@@ -176,3 +128,20 @@ def add_attachment(
     db.refresh(task)
 
     return {"message": "Attachment uploaded successfully", "task": serialize_task(task)}
+
+
+def parse_tags(tags: str = None):
+    if not tags:
+        return []
+    return [tag.strip() for tag in tags.split(",") if tag.strip()]
+
+
+def serialize_task(task: models.Task):
+    return {
+        "id": task.id,
+        "title": task.title,
+        "description": task.description,
+        "is_completed": task.is_completed,
+        "attachment_url": task.attachment_url,
+        "tags": [tag.name for tag in task.tags],
+    }

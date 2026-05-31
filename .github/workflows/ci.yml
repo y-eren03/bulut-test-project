@@ -53,11 +53,11 @@ jobs:
       - name: Docker build
         run: docker build -t todo-list-manager:${{ github.sha }} .
 
-      - name: Set up kubectl
-        uses: azure/setup-kubectl@v4
+      - name: Start Minikube
+        uses: medyagh/setup-minikube@latest
 
       - name: Deploy manifest validation
-        run: kubectl apply --dry-run=client --validate=false -f k8s/
+        run: kubectl apply --dry-run=client -f k8s/
 
       - name: Set up Node.js
         uses: actions/setup-node@v4

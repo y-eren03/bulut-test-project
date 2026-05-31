@@ -1,99 +1,93 @@
 # To-Do List Manager
 
-Security operations themed To-Do List Manager built for the Bulut Mimarilerinde Test Muhendisligi term project. The app keeps the domain intentionally small while demonstrating an end-to-end cloud testing pipeline: API, database, LocalStack S3, tests, CI/CD, containerization, Kubernetes, monitoring, performance testing, and E2E UI automation.
+Bulut Mimarilerinde Test Mühendisliği dersi için geliştirilmiş, test odaklı ve bulut tabanlı bir mikroservis projesidir. Bu proje, uçtan uca test süreçlerini (Unit, Integration, E2E), CI/CD pipeline'ını ve performans izleme (Monitoring) altyapısını içerir.
 
-## Project Scope
+## 🚀 Teknolojiler ve Araçlar
 
-- Mini service: FastAPI application with Task and Tag entities.
-- REST API: health, list/create/read/complete/delete task, attach tag, upload S3 attachment, and stats endpoints.
-- Database: SQLite locally by default, PostgreSQL in Docker/CI integration flows.
-- AWS emulation: LocalStack S3 stores task attachments.
-- Test stack: pytest, Factory Boy, Testcontainers, Playwright, Postman/Newman, and k6.
-- Observability: Prometheus exporter and Grafana dashboard with request rate, P95 latency, and status code panels.
+- **Backend:** FastAPI (Python), SQLAlchemy
+- **Veritabanı:** PostgreSQL, SQLite (Testler için)
+- **AWS Emülasyonu:** LocalStack (S3 - Dosya yükleme)
+- **Test Araçları:** Pytest, Playwright (E2E), Testcontainers, Factory-Boy, Faker
+- **API Testleri:** Postman & Newman
+- **Performans Testi:** k6
+- **Monitoring:** Prometheus, Grafana
+- **Dağıtım & Konteyner:** Docker, Docker Compose, Kubernetes (Minikube)
+- **CI/CD:** GitHub Actions
 
-## Local Setup
+## 📦 Kurulum ve Çalıştırma
 
+### Gereksinimler
+- Docker & Docker Compose
+- Minikube & kubectl
+- Python 3.11+ & Poetry
+
+### Lokal Geliştirme (Docker Compose)
+Tüm sistemi (Uygulama, Veritabanı, LocalStack, Prometheus, Grafana) tek komutla ayağa kaldırmak için:
 ```bash
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn src.main:app --reload
+docker-compose up -d
+```
+- Uygulama: `http://localhost:8000`
+- API Dokümantasyonu (Swagger): `http://localhost:8000/docs`
+- Grafana Dashboard: `http://localhost:3000`
+
+### Bağımlılıkların Kurulması
+```bash
+poetry install
 ```
 
-Open:
+## 🧪 Testlerin Çalıştırılması
 
-- App UI: http://localhost:8000
-- API docs: http://localhost:8000/docs
-- Metrics: http://localhost:8000/metrics
+Proje %80 üzerinde test coverage oranına sahiptir. Testleri çalıştırmak için aşağıdaki komutları kullanabilirsiniz:
 
-## Docker Compose Demo
-
+**Birim (Unit) Testleri:**
 ```bash
-docker-compose up -d --build
+python -m poetry run pytest tests/unit --cov=src
 ```
 
-Services:
-
-- API: http://localhost:8000
-- LocalStack S3: http://localhost:4566
-- Prometheus: http://localhost:9090
-- Grafana: http://localhost:3000
-
-Grafana credentials are the default `admin` / `admin` unless changed locally.
-
-## Tests
-
+**Entegrasyon (Integration) Testleri:**
 ```bash
-pytest --cov=src --cov-report=term-missing
-pytest tests/unit
-pytest tests/e2e/test_ui.py
-newman run postman/collection.json
+python -m poetry run pytest tests/integration
+```
+
+**Uçtan Uca (E2E) Testleri (Playwright):**
+```bash
+# İlk çalıştırmada tarayıcıların indirilmesi gerekebilir:
+# python -m playwright install chromium
+python -m poetry run pytest tests/e2e -v
+```
+
+**Yük ve Performans Testi (k6):**
+```bash
 k6 run perf/load-test.js
 ```
 
-The full integration test suite uses Testcontainers and requires Docker.
+## ☸️ Kubernetes (Minikube) Dağıtımı
 
-## Kubernetes
-
-For Minikube:
-
+Uygulamayı Minikube üzerinde çalıştırmak için:
 ```bash
+# Minikube'ü başlatın
 minikube start
-eval $(minikube docker-env)
-docker build -t todo-list-manager:latest .
-kubectl apply -f k8s/configmap.yaml
-kubectl apply -f k8s/deployment.yaml
-kubectl apply -f k8s/service.yaml
+
+# İmajı Minikube içerisine derleyin
+minikube image build -t todo-list-manager:latest .
+
+# Manifestleri uygulayın
+kubectl apply -f k8s/
+
+# Pod'ların durumunu kontrol edin
 kubectl get pods
-minikube service todo-list-manager-service
 ```
 
-On Windows PowerShell, use:
+## 🔄 CI/CD (GitHub Actions)
+Projeye yapılan her `push` ve `pull_request` işlemi GitHub Actions tarafından otomatik olarak test edilir.
+Adımlar:
+1. `black` ile kod formatlama kontrolü
+2. Pytest ile unit/integration testleri ve %70 coverage zorunluluğu
+3. Newman ile Postman API testleri
+4. Docker imajının build edilmesi
 
-```powershell
-minikube docker-env | Invoke-Expression
-```
+## 🎥 Canlı Demo Videosu
+Sunum yedek videosu eklenecektir: [Video Linki Buraya Gelecek]
 
-## API Summary
-
-| Method | Endpoint | Purpose |
-| --- | --- | --- |
-| GET | `/health` | Health check |
-| GET | `/tasks` | List tasks |
-| POST | `/tasks` | Create task with `title` and optional `description` |
-| GET | `/tasks/{task_id}` | Read one task |
-| PUT | `/tasks/{task_id}/complete` | Mark task as completed |
-| DELETE | `/tasks/{task_id}` | Delete task |
-| POST | `/tasks/{task_id}/tags` | Attach a tag with `name` |
-| POST | `/tasks/{task_id}/attachment` | Upload attachment to LocalStack S3 |
-| GET | `/tasks/stats/overview` | Dashboard statistics |
-
-## Final Deliverables
-
-- `docs/architecture.png`: architecture diagram
-- `docs/final-report.pdf`: final report, 4-6 pages
-- `docs/slides.pdf`: 7-8 presentation slides
-- `docs/demo-guide.md`: demo and screenshot guide
-- `perf/report.md`: performance test notes
-
-The PDF report and slides should include real screenshots from the local run: coverage, GitHub Actions, app UI, Grafana, k6, Playwright, Docker/Minikube, and LocalStack S3.
+---
+*Marmara Üniversitesi - Bulut Mimarilerinde Test Mühendisliği Dönem Projesi*

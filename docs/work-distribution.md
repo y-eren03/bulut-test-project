@@ -1,32 +1,28 @@
-# Work Distribution
+# İş Paylaşımı — To-Do List Manager & Bulut Test Otomasyonu
 
-This project can be submitted individually or by a group of up to three people.
+## Üyeler
+- Yusuf Eren ÇELEBİ (170424826) — Tech Lead, Repo Sahibi + CI/CD + Backend
+- MHD DİA  — Frontend + DB
 
-## Individual Submission
+## Modül Sorumluluğu
+| Modül | Sorumlu | Yardımcı |
+|--------------------|--------------|--------------|
+| REST Endpoint'ler | MHD DİA | - |
+| DB Modelleri | MHD DİA | - |
+| Docker + Compose | Yusuf Eren | - |
+| K8s Manifestleri | Yusuf Eren | - |
+| Helm Chart Paketleme | MHD DİA | - |
+| GitHub Actions | Yusuf Eren | - |
+| ArgoCD (GitOps) | MHD DİA | - |
+| Monitoring (Prometheus/Grafana)| Yusuf Eren | - |
+| OpenTelemetry Tracing | MHD DİA | - |
+| E2E Testler | Yusuf Eren | - |
+| Performans (k6) | Yusuf Eren | - |
+| Final Raporu | MHD DİA | - |
+| Slayt | MHD DİA | - |
 
-If submitted individually, the student is responsible for all modules:
+## Sunum Sorumluluğu (20 dk slot)
+- **0-8 dk:** Problem + Mimari + Test Stratejisi → MHD DİA
+- **8-16 dk:** Canlı Demo (PR → CI → ArgoCD Deploy → OpenTelemetry Metric → E2E) → Yusuf Eren ÇELEBİ
+- **16-20 dk:** Q&A → Hep birlikte
 
-| Module | Responsible |
-| --- | --- |
-| FastAPI service and database models | Individual student |
-| Unit, integration, E2E, Postman, and performance tests | Individual student |
-| Docker, Docker Compose, Kubernetes manifests | Individual student |
-| LocalStack S3 integration | Individual student |
-| Prometheus and Grafana monitoring | Individual student |
-| README, final report, and slides | Individual student |
-
-## Group Submission
-
-If submitted as a group, replace this section with the final member list and responsibilities before delivery.
-
-| Module | Responsible | Helper |
-| --- | --- | --- |
-| REST endpoints | TBD | TBD |
-| Database models | TBD | TBD |
-| Docker and Docker Compose | TBD | TBD |
-| Kubernetes manifests | TBD | TBD |
-| GitHub Actions | TBD | TBD |
-| Monitoring | TBD | TBD |
-| E2E tests | TBD | TBD |
-| Performance test | TBD | TBD |
-| Final report and slides | TBD | TBD |

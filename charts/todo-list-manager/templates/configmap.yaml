@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "todo-list-manager.fullname" . }}-config
+  labels:
+    app.kubernetes.io/name: {{ include "todo-list-manager.name" . }}
+data:
+  DATABASE_URL: {{ .Values.env.DATABASE_URL | quote }}
+  S3_ENDPOINT: {{ .Values.env.S3_ENDPOINT | quote }}
+  OTEL_ENABLED: {{ .Values.env.OTEL_ENABLED | quote }}
+  OTEL_EXPORTER_OTLP_ENDPOINT: {{ .Values.env.OTEL_EXPORTER_OTLP_ENDPOINT | quote }}

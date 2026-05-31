@@ -6,260 +6,228 @@
     <title>To-Do List Manager</title>
     <style>
         :root {
-            --bg: #071014;
-            --surface: #0e171d;
-            --surface-2: #121f27;
-            --surface-3: #182832;
-            --border: #29404d;
-            --border-soft: rgba(79, 113, 130, 0.36);
-            --text: #edf7f9;
-            --muted: #8fa7b2;
-            --cyan: #1ed6e7;
-            --green: #41d37c;
-            --amber: #f6bd38;
-            --red: #f0677d;
-            --shadow: rgba(0, 0, 0, 0.42);
+            --bg: #061014;
+            --panel: rgba(8, 24, 30, 0.92);
+            --panel-soft: rgba(12, 34, 42, 0.88);
+            --border: #21404d;
+            --border-strong: #2f5968;
+            --text: #f4fbff;
+            --muted: #9fc1cc;
+            --cyan: #18d7f2;
+            --cyan-soft: rgba(24, 215, 242, 0.12);
+            --green: #29c980;
+            --yellow: #ffc43d;
+            --danger: #f45f6b;
         }
 
         * {
             box-sizing: border-box;
-        }
-
-        html,
-        body {
-            height: 100%;
-        }
-
-        body {
             margin: 0;
-            overflow: hidden;
+            padding: 0;
+        }
+
+        body {
+            height: 100vh;
             color: var(--text);
             font-family: Arial, Helvetica, sans-serif;
             background:
-                linear-gradient(rgba(30, 214, 231, 0.04) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(30, 214, 231, 0.04) 1px, transparent 1px),
-                linear-gradient(120deg, rgba(10, 72, 79, 0.84), rgba(7, 16, 20, 0.94) 35%, #070d11 100%);
-            background-size: 40px 40px, 40px 40px, auto;
+                linear-gradient(90deg, rgba(40, 107, 112, 0.62) 0, rgba(40, 107, 112, 0.34) 155px, transparent 315px),
+                linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+                radial-gradient(circle at 30% 0%, rgba(30, 161, 170, 0.18), transparent 38%),
+                var(--bg);
+            background-size: auto, 40px 40px, 40px 40px, auto, auto;
+            padding: 16px;
+            overflow: hidden;
         }
 
-        button,
-        input {
-            font: inherit;
+        .shell {
+            width: min(1320px, calc(100vw - 32px));
+            height: calc(100vh - 32px);
+            margin: 0 auto;
+            display: grid;
+            grid-template-rows: 80px minmax(0, 1fr);
+            gap: 14px;
         }
 
-        button {
-            min-height: 36px;
-            border: 1px solid transparent;
+        .topbar,
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
             border-radius: 6px;
-            padding: 8px 11px;
-            cursor: pointer;
-            color: var(--text);
-            background: var(--surface-3);
-            font-weight: 700;
+            box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
         }
 
-        button:hover {
-            border-color: var(--cyan);
+        .topbar {
+            min-height: 0;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            margin-bottom: 0;
+        }
+
+        h1 {
+            font-size: 28px;
+            line-height: 1;
+            margin-bottom: 8px;
+            letter-spacing: 0;
+        }
+
+        .subtitle {
+            color: #b7d9e4;
+            font-size: 13px;
+        }
+
+        .status-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .pill {
+            border: 1px solid var(--border-strong);
+            border-radius: 999px;
+            padding: 8px 12px;
+            color: #bce8f3;
+            font-size: 12px;
+            background: rgba(9, 29, 36, 0.78);
+        }
+
+        .api-pill {
+            color: #20ff9a;
+            border-color: #2e5f69;
+        }
+
+        .api-pill::before {
+            content: "";
+            width: 9px;
+            height: 9px;
+            display: inline-block;
+            border-radius: 50%;
+            background: var(--green);
+            margin-right: 8px;
+            box-shadow: 0 0 12px rgba(41, 201, 128, 0.75);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 330px 1fr;
+            gap: 12px;
+            min-height: 0;
+        }
+
+        .stack {
+            display: grid;
+            grid-template-rows: auto auto minmax(0, 1fr);
+            gap: 12px;
+            min-height: 0;
+        }
+
+        .panel {
+            padding: 12px;
+        }
+
+        .panel-header {
+            color: var(--cyan);
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            color: #c7e9f2;
+            margin: 12px 0 6px;
         }
 
         input {
             width: 100%;
-            min-height: 38px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            background: #071015;
+            height: 38px;
+            border: 1px solid var(--border-strong);
+            border-radius: 5px;
+            background: #071117;
             color: var(--text);
-            padding: 9px 11px;
+            padding: 0 12px;
+            font-size: 16px;
             outline: none;
         }
 
         input:focus {
             border-color: var(--cyan);
-            box-shadow: 0 0 0 3px rgba(30, 214, 231, 0.12);
+            box-shadow: 0 0 0 3px rgba(24, 215, 242, 0.11);
         }
 
-        label {
-            display: block;
-            margin-bottom: 6px;
-            color: var(--muted);
-            font-size: 12px;
+        button {
+            border: 0;
+            border-radius: 5px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            height: 36px;
+            padding: 0 14px;
+            background: #14303c;
         }
 
-        .app {
-            width: min(1320px, calc(100vw - 28px));
-            height: calc(100vh - 28px);
-            margin: 14px auto;
-            display: grid;
-            grid-template-rows: auto minmax(0, 1fr);
-            gap: 12px;
+        button:hover {
+            filter: brightness(1.12);
         }
 
-        .topbar,
-        .panel,
-        .stat,
-        .task,
-        .operator-card,
-        .checklist {
-            border: 1px solid var(--border-soft);
-            background: rgba(14, 23, 29, 0.94);
-            box-shadow: 0 14px 34px var(--shadow);
-        }
-
-        .topbar {
-            min-height: 76px;
-            border-radius: 8px;
-            padding: 14px 16px;
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto;
-            align-items: center;
-            gap: 16px;
-        }
-
-        h1 {
-            margin: 0;
-            font-size: 26px;
-            letter-spacing: 0;
-        }
-
-        .subtitle {
-            margin-top: 5px;
-            color: var(--muted);
-            font-size: 13px;
-        }
-
-        .top-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .pill {
-            min-height: 32px;
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            border: 1px solid var(--border);
-            border-radius: 999px;
-            padding: 6px 10px;
-            color: var(--muted);
-            background: #0a1318;
-            font-size: 12px;
-            white-space: nowrap;
-        }
-
-        .status {
-            color: var(--green);
-        }
-
-        .status-dot {
-            width: 9px;
-            height: 9px;
-            border-radius: 50%;
-            background: var(--green);
-            box-shadow: 0 0 15px var(--green);
-        }
-
-        .workspace {
-            min-height: 0;
-            display: grid;
-            grid-template-columns: 330px minmax(0, 1fr);
-            gap: 12px;
-        }
-
-        .sidebar {
-            min-height: 0;
-            display: grid;
-            grid-template-rows: auto auto minmax(0, 1fr);
-            gap: 12px;
-        }
-
-        .panel,
-        .operator-card,
-        .checklist {
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .panel-header {
-            min-height: 42px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            border-bottom: 1px solid var(--border-soft);
-            background: var(--surface-2);
-            padding: 10px 12px;
-            color: var(--cyan);
-            font-size: 12px;
-            font-weight: 800;
-            text-transform: uppercase;
-        }
-
-        .panel-body {
-            padding: 12px;
-        }
-
-        .form-row {
-            margin-bottom: 10px;
-        }
-
-        .primary {
+        .btn-add {
             width: 100%;
-            background: linear-gradient(135deg, #078b9e, #178450);
+            margin-top: 10px;
+            background: linear-gradient(90deg, #1195a3, #1c9a61);
+            font-size: 16px;
         }
 
-        .operator-card {
-            padding: 12px;
+        .meta-panel {
+            min-height: 112px;
         }
 
-        .operator-title {
-            margin: 0 0 8px;
-            color: var(--muted);
-            font-size: 12px;
-            text-transform: uppercase;
-            font-weight: 800;
-        }
-
-        .operator-line {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            color: var(--text);
+        .kv {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 12px;
+            margin-top: 14px;
             font-size: 13px;
+            font-weight: 700;
         }
 
-        .operator-line + .operator-line {
-            margin-top: 8px;
+        .kv span:nth-child(even) {
+            text-align: right;
         }
 
         .checklist {
             min-height: 0;
-            padding: 12px;
-            color: var(--muted);
-            font-size: 13px;
-            line-height: 1.45;
         }
 
-        .checklist strong {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--text);
+        .checklist ul {
+            list-style: none;
+            margin-top: 14px;
+            display: grid;
+            gap: 12px;
+            color: #b9deea;
             font-size: 14px;
         }
 
-        .check-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 8px;
-        }
-
-        .check-dot {
+        .checklist li::before {
+            content: "";
             width: 8px;
             height: 8px;
+            display: inline-block;
             border-radius: 50%;
             background: var(--cyan);
+            margin-right: 9px;
+            transform: translateY(-1px);
         }
 
         .board {
@@ -272,466 +240,524 @@
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 10px;
-            padding: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
         }
 
         .stat {
-            border-radius: 8px;
-            padding: 11px 12px;
-            background: #0b141a;
-            box-shadow: none;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px;
+            background: rgba(5, 16, 22, 0.76);
         }
 
         .stat strong {
-            display: block;
             color: var(--cyan);
+            display: block;
             font-size: 24px;
-            line-height: 1.05;
+            line-height: 1;
+            margin-bottom: 6px;
         }
 
         .stat span {
-            color: var(--muted);
+            color: #c4dce3;
             font-size: 12px;
         }
 
-        .toolbar {
-            display: grid;
-            grid-template-columns: minmax(260px, 1fr) auto;
-            align-items: end;
-            gap: 12px;
-            border-top: 1px solid var(--border-soft);
-            border-bottom: 1px solid var(--border-soft);
-            padding: 10px 12px;
-            background: rgba(18, 31, 39, 0.62);
+        .search-area {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
         }
 
-        .search-field {
-            min-width: 0;
-        }
-
-        .search-label {
-            display: block;
-            margin-bottom: 6px;
+        .search-title {
             color: var(--cyan);
-            font-size: 11px;
-            font-weight: 800;
+            font-size: 12px;
             text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 8px;
         }
 
-        .filters {
-            display: flex;
+        .search-row {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
             gap: 8px;
         }
 
         .filter.active {
-            border-color: var(--cyan);
-            color: #061014;
+            color: #001016;
             background: var(--cyan);
         }
 
-        #searchBox {
-            margin: 0;
-            background: #081219;
-        }
-
-        #taskList {
-            min-height: 0;
-            overflow: auto;
+        .tasks {
             display: grid;
+            gap: 10px;
+            padding-top: 12px;
+            min-height: 0;
+            overflow-y: auto;
+            padding-right: 6px;
             align-content: start;
-            gap: 8px;
-            padding: 12px;
-            background: rgba(7, 16, 20, 0.28);
         }
 
-        #taskList::-webkit-scrollbar {
+        .tasks::-webkit-scrollbar {
             width: 10px;
         }
 
-        #taskList::-webkit-scrollbar-thumb {
-            border: 3px solid #0b141a;
+        .tasks::-webkit-scrollbar-track {
+            background: rgba(5, 16, 22, 0.65);
             border-radius: 999px;
-            background: var(--border);
+        }
+
+        .tasks::-webkit-scrollbar-thumb {
+            background: #225060;
+            border-radius: 999px;
+            border: 2px solid rgba(5, 16, 22, 0.65);
+        }
+
+        .tasks::-webkit-scrollbar-thumb:hover {
+            background: #2f6c7f;
         }
 
         .task {
             min-height: 74px;
-            border-left: 4px solid var(--amber);
-            border-radius: 8px;
-            padding: 10px 12px;
-            background: #0a1218;
-            box-shadow: none;
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--yellow);
+            border-radius: 6px;
+            background: rgba(5, 15, 21, 0.82);
             display: grid;
-            grid-template-columns: minmax(0, 1fr) auto;
+            grid-template-columns: 1fr auto;
+            gap: 12px;
             align-items: center;
-            gap: 14px;
+            padding: 14px 12px;
         }
 
-        .task.completed {
+        .task.closed {
             border-left-color: var(--green);
-            opacity: 0.78;
+            opacity: 0.62;
         }
 
-        .task-top {
-            min-width: 0;
+        .task.closed .task-title {
+            text-decoration: line-through;
         }
 
         .task-title {
-            margin: 0;
-            overflow: hidden;
-            color: var(--text);
-            font-size: 15px;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .task.completed .task-title {
-            text-decoration: line-through;
-            color: var(--muted);
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 5px;
         }
 
         .task-desc {
-            margin: 4px 0 0;
-            overflow: hidden;
-            color: var(--muted);
+            color: #add3df;
             font-size: 12px;
-            text-overflow: ellipsis;
-            white-space: nowrap;
         }
 
-        .badge {
-            border: 1px solid rgba(65, 211, 124, 0.36);
-            border-radius: 999px;
-            color: var(--green);
-            padding: 4px 8px;
-            font-size: 11px;
-            white-space: nowrap;
-        }
-
-        .badge.open {
-            border-color: rgba(246, 189, 56, 0.38);
-            color: var(--amber);
-        }
-
-        .task-bottom {
+        .task-actions {
             display: flex;
             align-items: center;
-            justify-content: flex-end;
-            gap: 10px;
-            min-width: 360px;
-        }
-
-        .tags {
-            display: flex;
+            gap: 8px;
             flex-wrap: wrap;
-            gap: 6px;
-            max-width: 180px;
             justify-content: flex-end;
         }
 
         .tag {
-            display: inline-flex;
-            align-items: center;
-            min-height: 24px;
-            border: 1px solid rgba(30, 214, 231, 0.32);
-            border-radius: 999px;
+            border: 1px solid #0ca9bd;
             color: var(--cyan);
-            padding: 3px 8px;
+            border-radius: 999px;
+            padding: 5px 9px;
             font-size: 11px;
-            text-decoration: none;
+            font-weight: 700;
         }
 
-        .actions {
-            display: flex;
-            gap: 7px;
-            align-items: center;
+        .state {
+            border: 1px solid var(--yellow);
+            color: var(--yellow);
+            border-radius: 999px;
+            padding: 5px 9px;
+            font-size: 11px;
+            font-weight: 700;
         }
 
-        .actions button {
-            min-height: 30px;
-            padding: 6px 9px;
+        .state.closed {
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        .btn-complete {
+            height: 30px;
             font-size: 12px;
-            white-space: nowrap;
+            background: #14303c;
         }
 
-        .danger:hover {
-            border-color: var(--red);
-            color: var(--red);
+        .btn-attach,
+        .btn-delete {
+            height: 30px;
+            font-size: 12px;
+            background: #142a35;
+        }
+
+        .btn-delete:hover {
+            background: #4a1d26;
+        }
+
+        .attachment-link {
+            color: var(--cyan);
+            border: 1px solid var(--border-strong);
+            border-radius: 5px;
+            padding: 7px 10px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 700;
         }
 
         .empty {
-            height: 100%;
-            min-height: 220px;
-            border: 1px dashed var(--border);
-            border-radius: 8px;
-            display: grid;
-            place-items: center;
             color: var(--muted);
+            padding: 26px 8px;
             text-align: center;
         }
 
-        @media (max-width: 900px) {
+        @media (max-width: 860px) {
             body {
+                height: auto;
+                min-height: 100vh;
                 overflow: auto;
             }
 
-            .app {
+            .shell {
                 height: auto;
-                min-height: calc(100vh - 20px);
-                width: calc(100vw - 20px);
-                margin: 10px auto;
+                display: block;
             }
 
             .topbar,
-            .workspace,
-            .toolbar {
-                grid-template-columns: 1fr;
+            .grid,
+            .search-row,
+            .task {
+                display: block;
             }
 
-            .top-actions,
-            .filters {
-                flex-wrap: wrap;
+            .topbar {
+                height: auto;
+                margin-bottom: 12px;
+            }
+
+            .status-row,
+            .task-actions {
+                justify-content: flex-start;
+                margin-top: 12px;
+            }
+
+            .grid {
+                display: grid;
+                grid-template-columns: 1fr;
             }
 
             .stats {
                 grid-template-columns: repeat(2, 1fr);
             }
 
-            .task,
-            .task-bottom {
-                grid-template-columns: 1fr;
-                min-width: 0;
+            .filter {
+                margin-top: 8px;
             }
 
-            .task-bottom {
-                justify-content: flex-start;
-                align-items: flex-start;
-                flex-wrap: wrap;
-            }
-
-            .tags {
-                justify-content: flex-start;
-            }
-
-            #taskList {
-                max-height: 430px;
+            .tasks {
+                max-height: none;
+                overflow: visible;
+                padding-right: 0;
             }
         }
     </style>
 </head>
 <body>
-    <main class="app">
-        <section class="topbar">
+    <main class="shell">
+        <header class="topbar">
             <div>
                 <h1>To-Do List Manager</h1>
-                <div class="subtitle">Secure cloud delivery task board for test engineering demos</div>
+                <p class="subtitle">Secure cloud delivery task board for test engineering demos</p>
             </div>
-            <div class="top-actions">
+            <div class="status-row">
                 <span class="pill">Demo Workspace</span>
                 <span class="pill">FastAPI 0.2.0</span>
-                <span class="pill status"><span class="status-dot"></span> API ONLINE</span>
+                <span class="pill api-pill">API ONLINE</span>
             </div>
-        </section>
+        </header>
 
-        <section class="workspace">
-            <aside class="sidebar">
+        <section class="grid">
+            <aside class="stack">
                 <section class="panel">
                     <div class="panel-header">
                         <span>New Task</span>
-                        <span>SEC-OPS</span>
+                        <span>Sec-Ops</span>
                     </div>
-                    <div class="panel-body">
-                        <div class="form-row">
-                            <label for="taskTitle">Title</label>
-                            <input type="text" id="taskTitle" placeholder="Patch exposed endpoint">
-                        </div>
-                        <div class="form-row">
-                            <label for="taskDesc">Description</label>
-                            <input type="text" id="taskDesc" placeholder="Add tests, verify metrics, close risk">
-                        </div>
-                        <div class="form-row">
-                            <label for="taskTag">Tag</label>
-                            <input type="text" id="taskTag" placeholder="incident, ci, k8s, s3">
-                        </div>
-                        <button class="primary" onclick="addTask()">Ekle</button>
+                    <label for="taskTitle">Title</label>
+                    <input type="text" id="taskTitle" placeholder="Patch exposed endpoint">
+
+                    <label for="taskDesc">Description</label>
+                    <input type="text" id="taskDesc" placeholder="Add tests, verify metrics, close risk">
+
+                    <label for="taskTags">Tag</label>
+                    <input type="text" id="taskTags" placeholder="incident, ci, k8s, s3">
+
+                    <button class="btn-add" id="addTaskButton">Ekle</button>
+                </section>
+
+                <section class="panel meta-panel">
+                    <div class="panel-header">Session</div>
+                    <div class="kv">
+                        <span>Operator</span><span>Demo User</span>
+                        <span>Environment</span><span>LocalStack</span>
+                        <span>Evidence</span><span>Metrics enabled</span>
                     </div>
                 </section>
 
-                <section class="operator-card">
-                    <p class="operator-title">Session</p>
-                    <div class="operator-line"><span>Operator</span><strong>Demo User</strong></div>
-                    <div class="operator-line"><span>Environment</span><strong>LocalStack</strong></div>
-                    <div class="operator-line"><span>Evidence</span><strong>Metrics enabled</strong></div>
-                </section>
-
-                <section class="checklist">
-                    <strong>Presentation checklist</strong>
-                    <div class="check-item"><span class="check-dot"></span><span>API endpoints visible in Swagger</span></div>
-                    <div class="check-item"><span class="check-dot"></span><span>Prometheus metrics exposed</span></div>
-                    <div class="check-item"><span class="check-dot"></span><span>Tasks, tags, S3 attachments ready</span></div>
+                <section class="panel checklist">
+                    <div class="panel-header">Presentation checklist</div>
+                    <ul>
+                        <li>API endpoints visible in Swagger</li>
+                        <li>Prometheus metrics exposed</li>
+                        <li>Tasks, tags, S3 attachments ready</li>
+                    </ul>
                 </section>
             </aside>
 
             <section class="panel board">
                 <div class="panel-header">
                     <span>Operations Board</span>
-                    <span id="completionRate">0% closed</span>
+                    <span id="closedRate">0% Closed</span>
                 </div>
 
                 <div class="stats">
                     <div class="stat"><strong id="totalCount">0</strong><span>Total tasks</span></div>
                     <div class="stat"><strong id="openCount">0</strong><span>Open</span></div>
-                    <div class="stat"><strong id="doneCount">0</strong><span>Closed</span></div>
+                    <div class="stat"><strong id="closedCount">0</strong><span>Closed</span></div>
                     <div class="stat"><strong id="visibleCount">0</strong><span>Visible</span></div>
                 </div>
 
-                <div class="toolbar">
-                    <div class="search-field">
-                        <span class="search-label">Search</span>
-                        <input type="search" id="searchBox" placeholder="Search tasks or tags" oninput="renderTasks()">
-                    </div>
-                    <div class="filters">
-                        <button class="filter active" data-filter="all" onclick="setFilter('all')">All</button>
-                        <button class="filter" data-filter="open" onclick="setFilter('open')">Open</button>
-                        <button class="filter" data-filter="closed" onclick="setFilter('closed')">Closed</button>
+                <div class="search-area">
+                    <div class="search-title">Search</div>
+                    <div class="search-row">
+                        <input id="searchInput" type="search" placeholder="Search tasks or tags">
+                        <button class="filter active" data-filter="all">All</button>
+                        <button class="filter" data-filter="open">Open</button>
+                        <button class="filter" data-filter="closed">Closed</button>
                     </div>
                 </div>
 
-                <div id="taskList" aria-live="polite"></div>
+                <div class="tasks" id="taskList"></div>
             </section>
         </section>
     </main>
 
     <script>
         const API_URL = window.location.origin;
-        let tasksCache = [];
+        let tasks = [];
         let activeFilter = "all";
 
-        function escapeHtml(value) {
-            const div = document.createElement("div");
-            div.innerText = value || "";
-            return div.innerHTML;
-        }
-
-        function setFilter(filter) {
-            activeFilter = filter;
-            document.querySelectorAll(".filter").forEach((button) => {
-                button.classList.toggle("active", button.dataset.filter === filter);
+        document.getElementById("addTaskButton").addEventListener("click", addTask);
+        document.getElementById("searchInput").addEventListener("input", renderTasks);
+        document.querySelectorAll(".filter").forEach((button) => {
+            button.addEventListener("click", () => {
+                document.querySelectorAll(".filter").forEach((item) => item.classList.remove("active"));
+                button.classList.add("active");
+                activeFilter = button.dataset.filter;
+                renderTasks();
             });
-            renderTasks();
+        });
+
+        async function fetchTasks() {
+            try {
+                const res = await fetch(`${API_URL}/tasks`);
+                tasks = await res.json();
+                renderTasks();
+            } catch (err) {
+                console.error("Görevler yüklenirken hata oluştu:", err);
+            }
         }
 
-        async function fetchStats() {
-            const res = await fetch(`${API_URL}/tasks/stats/overview`);
-            const stats = await res.json();
-            document.getElementById("totalCount").innerText = stats.total;
-            document.getElementById("openCount").innerText = stats.open;
-            document.getElementById("doneCount").innerText = stats.completed;
-            document.getElementById("completionRate").innerText = `${stats.completion_rate}% closed`;
-        }
-
-        function renderTasks() {
-            const search = document.getElementById("searchBox").value.trim().toLowerCase();
-            const list = document.getElementById("taskList");
-            const visibleTasks = tasksCache.filter((task) => {
-                const statusMatch =
+        function getFilteredTasks() {
+            const term = document.getElementById("searchInput").value.trim().toLowerCase();
+            return tasks.filter((task) => {
+                const tags = task.tags || [];
+                const haystack = [task.title, task.description, ...tags].join(" ").toLowerCase();
+                const matchesSearch = !term || haystack.includes(term);
+                const matchesFilter =
                     activeFilter === "all" ||
                     (activeFilter === "open" && !task.is_completed) ||
                     (activeFilter === "closed" && task.is_completed);
-                const haystack = `${task.title} ${task.description || ""} ${(task.tags || []).join(" ")}`.toLowerCase();
-                return statusMatch && (!search || haystack.includes(search));
+                return matchesSearch && matchesFilter;
             });
+        }
 
-            document.getElementById("visibleCount").innerText = visibleTasks.length;
+        function renderStats(visibleTasks) {
+            const total = tasks.length;
+            const closed = tasks.filter((task) => task.is_completed).length;
+            const open = total - closed;
+            const rate = total ? Math.round((closed / total) * 100) : 0;
+
+            document.getElementById("totalCount").textContent = total;
+            document.getElementById("openCount").textContent = open;
+            document.getElementById("closedCount").textContent = closed;
+            document.getElementById("visibleCount").textContent = visibleTasks.length;
+            document.getElementById("closedRate").textContent = `${rate}% Closed`;
+        }
+
+        function renderTasks() {
+            const visibleTasks = getFilteredTasks();
+            const list = document.getElementById("taskList");
             list.innerHTML = "";
+            renderStats(visibleTasks);
 
             if (!visibleTasks.length) {
-                list.innerHTML = `<div class="empty">No tasks match this view</div>`;
+                const empty = document.createElement("div");
+                empty.className = "empty";
+                empty.textContent = "Bu filtrede gösterilecek görev yok.";
+                list.appendChild(empty);
                 return;
             }
 
             visibleTasks.forEach((task) => {
-                const article = document.createElement("article");
-                article.className = `task${task.is_completed ? " completed" : ""}`;
-                const tags = (task.tags || [])
-                    .map((tag) => `<span class="tag">#${escapeHtml(tag)}</span>`)
-                    .join("");
-                const badgeClass = task.is_completed ? "" : " open";
+                const row = document.createElement("article");
+                row.className = `task${task.is_completed ? " completed closed" : ""}`;
 
-                article.innerHTML = `
-                    <div class="task-top">
-                        <h2 class="task-title">${escapeHtml(task.title)}</h2>
-                        ${task.description ? `<p class="task-desc">${escapeHtml(task.description)}</p>` : ""}
-                    </div>
-                    <div class="task-bottom">
-                        <div class="tags">${tags || '<span class="tag">#untagged</span>'}</div>
-                        <span class="badge${badgeClass}">${task.is_completed ? "CLOSED" : "OPEN"}</span>
-                        <div class="actions">
-                            ${task.is_completed ? "" : `<button onclick="completeTask(${task.id})">Tamamla</button>`}
-                            <input type="file" id="file-${task.id}" style="display:none" onchange="uploadAttachment(${task.id})">
-                            <button onclick="document.getElementById('file-${task.id}').click()">Dosya</button>
-                            ${task.attachment_url ? `<a class="tag" href="${escapeHtml(task.attachment_url)}" target="_blank">S3</a>` : ""}
-                            <button class="danger" onclick="deleteTask(${task.id})">Sil</button>
-                        </div>
-                    </div>
-                `;
-                list.appendChild(article);
+                const content = document.createElement("div");
+                const title = document.createElement("div");
+                title.className = "task-title";
+                title.textContent = task.title;
+                content.appendChild(title);
+
+                if (task.description) {
+                    const description = document.createElement("div");
+                    description.className = "task-desc";
+                    description.textContent = task.description;
+                    content.appendChild(description);
+                }
+
+                const actions = document.createElement("div");
+                actions.className = "task-actions";
+
+                const tags = task.tags && task.tags.length ? task.tags : ["task"];
+                tags.slice(0, 2).forEach((tagName) => {
+                    const tag = document.createElement("span");
+                    tag.className = "tag";
+                    tag.textContent = `#${tagName}`;
+                    actions.appendChild(tag);
+                });
+
+                const state = document.createElement("span");
+                state.className = `state${task.is_completed ? " closed" : ""}`;
+                state.textContent = task.is_completed ? "CLOSED" : "OPEN";
+                actions.appendChild(state);
+
+                if (!task.is_completed) {
+                    const completeButton = document.createElement("button");
+                    completeButton.className = "btn-complete";
+                    completeButton.textContent = "Tamamla";
+                    completeButton.addEventListener("click", () => completeTask(task.id));
+                    actions.appendChild(completeButton);
+                }
+
+                const fileInput = document.createElement("input");
+                fileInput.type = "file";
+                fileInput.style.display = "none";
+                fileInput.addEventListener("change", () => uploadAttachment(task.id, fileInput));
+                actions.appendChild(fileInput);
+
+                const attachButton = document.createElement("button");
+                attachButton.className = "btn-attach";
+                attachButton.textContent = "Dosya";
+                attachButton.addEventListener("click", () => fileInput.click());
+                actions.appendChild(attachButton);
+
+                if (task.attachment_url) {
+                    const link = document.createElement("a");
+                    link.href = task.attachment_url;
+                    link.target = "_blank";
+                    link.rel = "noopener noreferrer";
+                    link.className = "attachment-link";
+                    link.textContent = "Ek";
+                    actions.appendChild(link);
+                }
+
+                const deleteButton = document.createElement("button");
+                deleteButton.className = "btn-delete";
+                deleteButton.textContent = "Sil";
+                deleteButton.addEventListener("click", () => deleteTask(task.id));
+                actions.appendChild(deleteButton);
+
+                row.appendChild(content);
+                row.appendChild(actions);
+                list.appendChild(row);
             });
         }
 
-        async function fetchTasks() {
-            const res = await fetch(`${API_URL}/tasks`);
-            tasksCache = await res.json();
-            renderTasks();
-            await fetchStats();
-        }
-
         async function addTask() {
-            const title = document.getElementById("taskTitle").value.trim();
-            const desc = document.getElementById("taskDesc").value.trim();
-            const tag = document.getElementById("taskTag").value.trim();
-            if (!title) return alert("Task title is required.");
+            const titleInput = document.getElementById("taskTitle");
+            const descInput = document.getElementById("taskDesc");
+            const tagsInput = document.getElementById("taskTags");
+            const title = titleInput.value.trim();
+            const description = descInput.value.trim();
+            const tags = tagsInput.value.trim();
 
-            const params = new URLSearchParams({ title, description: desc });
-            const res = await fetch(`${API_URL}/tasks?${params.toString()}`, { method: "POST" });
-            const task = await res.json();
-
-            if (tag) {
-                await fetch(`${API_URL}/tasks/${task.id}/tags?name=${encodeURIComponent(tag)}`, { method: "POST" });
+            if (!title) {
+                alert("Görev başlığı girmek zorunludur!");
+                return;
             }
 
-            document.getElementById("taskTitle").value = "";
-            document.getElementById("taskDesc").value = "";
-            document.getElementById("taskTag").value = "";
-            await fetchTasks();
+            try {
+                const params = new URLSearchParams({ title, description, tags });
+                const res = await fetch(`${API_URL}/tasks?${params.toString()}`, { method: "POST" });
+                if (!res.ok) throw new Error("Task create failed");
+                titleInput.value = "";
+                descInput.value = "";
+                tagsInput.value = "";
+                await fetchTasks();
+            } catch (err) {
+                console.error("Görev eklenirken hata oluştu:", err);
+                alert("Görev eklenemedi!");
+            }
         }
 
         async function completeTask(id) {
-            await fetch(`${API_URL}/tasks/${id}/complete`, { method: "PUT" });
-            await fetchTasks();
+            try {
+                const res = await fetch(`${API_URL}/tasks/${id}/complete`, { method: "PUT" });
+                if (!res.ok) throw new Error("Task complete failed");
+                await fetchTasks();
+            } catch (err) {
+                console.error("Görev tamamlanırken hata oluştu:", err);
+                alert("Görev tamamlanamadı!");
+            }
         }
 
         async function deleteTask(id) {
-            await fetch(`${API_URL}/tasks/${id}`, { method: "DELETE" });
-            await fetchTasks();
+            try {
+                const res = await fetch(`${API_URL}/tasks/${id}`, { method: "DELETE" });
+                if (!res.ok) throw new Error("Task delete failed");
+                await fetchTasks();
+            } catch (err) {
+                console.error("Görev silinirken hata oluştu:", err);
+                alert("Görev silinemedi!");
+            }
         }
 
-        async function uploadAttachment(id) {
-            const fileInput = document.getElementById(`file-${id}`);
+        async function uploadAttachment(id, fileInput) {
             if (!fileInput.files || fileInput.files.length === 0) return;
 
             const formData = new FormData();
             formData.append("file", fileInput.files[0]);
-            const res = await fetch(`${API_URL}/tasks/${id}/attachment`, {
-                method: "POST",
-                body: formData
-            });
 
-            alert(res.ok ? "File uploaded to LocalStack S3." : "S3 upload failed.");
-            await fetchTasks();
+            try {
+                const res = await fetch(`${API_URL}/tasks/${id}/attachment`, {
+                    method: "POST",
+                    body: formData,
+                });
+                if (!res.ok) throw new Error("Attachment upload failed");
+                await fetchTasks();
+            } catch (err) {
+                console.error("Attachment yükleme hatası:", err);
+                alert("Yükleme sırasında teknik bir hata oluştu!");
+            } finally {
+                fileInput.value = "";
+            }
         }
 
-        window.addEventListener("load", fetchTasks);
+        window.onload = fetchTasks;
     </script>
 </body>
 </html>

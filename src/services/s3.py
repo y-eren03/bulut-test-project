@@ -1,13 +1,14 @@
-import os
-
 import boto3
-from botocore.exceptions import ClientError
+import os
+from botocore.exceptions import NoCredentialsError
 
+# LocalStack S3 Ayarları
 S3_ENDPOINT = os.getenv("S3_ENDPOINT", "http://localhost:4566")
 S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME", "todo-attachments")
 
 
 def get_s3_client():
+    """Boto3 S3 istemcisini döndürür. LocalStack kullanacak şekilde yapılandırılmıştır."""
     return boto3.client(
         "s3",
         endpoint_url=S3_ENDPOINT,
@@ -17,21 +18,21 @@ def get_s3_client():
     )
 
 
-def ensure_bucket(s3_client):
-    try:
-        s3_client.head_bucket(Bucket=S3_BUCKET_NAME)
-    except ClientError:
-        s3_client.create_bucket(Bucket=S3_BUCKET_NAME)
+def upload_file(file_name: str, object_name: str = None):
+    """Belirtilen dosyayı S3'e yükler."""
+    if object_name is None:
+        object_name = file_name
 
-
-def upload_file(file_name: str, object_name: str | None = None):
-    object_key = object_name or os.path.basename(file_name)
     s3_client = get_s3_client()
-
     try:
-        ensure_bucket(s3_client)
-        s3_client.upload_file(file_name, S3_BUCKET_NAME, object_key)
-        return f"{S3_ENDPOINT}/{S3_BUCKET_NAME}/{object_key}"
-    except Exception as exc:
-        print(f"S3 upload error: {exc}")
+        # Bucket yoksa oluşturmayı deneriz (basit senaryo için)
+        try:
+            s3_client.head_bucket(Bucket=S3_BUCKET_NAME)
+        except:
+            s3_client.create_bucket(Bucket=S3_BUCKET_NAME)
+
+        s3_client.upload_file(file_name, S3_BUCKET_NAME, object_name)
+        return f"{S3_ENDPOINT}/{S3_BUCKET_NAME}/{object_name}"
+    except Exception as e:
+        print(f"S3 Upload Error: {e}")
         return None

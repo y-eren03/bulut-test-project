@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: todo-list-manager
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/y-eren03/bulut-test-project.git
+    targetRevision: main
+    path: charts/todo-list-manager
+    helm:
+      valueFiles:
+        - values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: todo
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
