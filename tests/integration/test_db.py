@@ -1,4 +1,6 @@
 import pytest
+import docker
+from docker.errors import DockerException
 from testcontainers.postgres import PostgresContainer
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -8,6 +10,11 @@ from src.models import Base, Task
 @pytest.fixture(scope="module")
 def postgres_container():
     """Testcontainers ile PostgreSQL container'ı başlatır."""
+    try:
+        docker.from_env().ping()
+    except DockerException as exc:
+        pytest.skip(f"Docker daemon is not available for Testcontainers: {exc}")
+
     postgres = PostgresContainer("postgres:16-alpine")
     with postgres as container:
         yield container

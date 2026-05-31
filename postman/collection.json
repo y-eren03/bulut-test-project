@@ -1,61 +1,78 @@
 {
   "info": {
     "name": "To-Do List Manager API",
-    "description": "Test Collection for To-Do List Manager",
+    "description": "Smoke and API regression collection for the course project.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
       "name": "Get Health Check",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('health endpoint is up', function () {",
+              "  pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "GET",
         "header": [],
-        "url": {
-          "raw": "http://localhost:8000/",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8000",
-          "path": [
-            "health"
-          ]
-        }
+        "url": "{{baseUrl}}/health"
       }
     },
     {
       "name": "Get Tasks",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('tasks list is returned', function () {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.json()).to.be.an('array');",
+              "});"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "GET",
         "header": [],
-        "url": {
-          "raw": "http://localhost:8000/tasks",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8000",
-          "path": [
-            "tasks"
-          ]
-        }
+        "url": "{{baseUrl}}/tasks"
       }
     },
     {
       "name": "Create Task",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('task is created', function () {",
+              "  pm.response.to.have.status(200);",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.title).to.eql('PostmanTask');",
+              "  pm.collectionVariables.set('taskId', body.id);",
+              "});"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "POST",
         "header": [],
         "url": {
-          "raw": "http://localhost:8000/tasks?title=PostmanTask&description=TestFromPostman",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8000",
-          "path": [
-            "tasks"
-          ],
+          "raw": "{{baseUrl}}/tasks?title=PostmanTask&description=TestFromPostman",
+          "host": ["{{baseUrl}}"],
+          "path": ["tasks"],
           "query": [
             {
               "key": "title",
@@ -68,29 +85,45 @@
           ]
         }
       }
-    }
-    ,{
+    },
+    {
       "name": "Complete Task",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('task is completed', function () {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.json().task.is_completed).to.eql(true);",
+              "});"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "PUT",
         "header": [],
-        "url": {
-          "raw": "http://localhost:8000/tasks/1/complete",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8000",
-          "path": [
-            "tasks",
-            "1",
-            "complete"
-          ]
-        }
+        "url": "{{baseUrl}}/tasks/{{taskId}}/complete"
       }
     },
     {
       "name": "Upload Attachment",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('attachment is uploaded', function () {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.json().task.attachment_url).to.include('todo-attachments');",
+              "});"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "POST",
         "header": [],
@@ -100,24 +133,24 @@
             {
               "key": "file",
               "type": "file",
-              "src": []
+              "src": "postman/sample-attachment.txt"
             }
           ]
         },
-        "url": {
-          "raw": "http://localhost:8000/tasks/1/attachment",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8000",
-          "path": [
-            "tasks",
-            "1",
-            "attachment"
-          ]
-        }
+        "url": "{{baseUrl}}/tasks/{{taskId}}/attachment"
       }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000"
+    }
+  ],
+  "collectionVariables": [
+    {
+      "key": "taskId",
+      "value": ""
     }
   ]
 }

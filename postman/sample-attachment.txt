@@ -1,0 +1,1 @@
+Sample attachment for LocalStack S3 upload smoke testing.

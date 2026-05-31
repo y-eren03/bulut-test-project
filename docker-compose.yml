@@ -11,9 +11,12 @@ services:
     environment:
       - DATABASE_URL=postgresql://user:password@db:5432/tododb
       - S3_ENDPOINT=http://localstack:4566
+      - OTEL_ENABLED=true
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
     depends_on:
       - db
       - localstack
+      - jaeger
 
   db:
     image: postgres:16-alpine
@@ -50,3 +53,10 @@ services:
       - "3000:3000"
     depends_on:
       - prometheus
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"

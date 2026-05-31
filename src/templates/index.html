@@ -4,388 +4,710 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>To-Do List Manager</title>
-    <!-- Modern Google Font: Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
     <style>
         :root {
-            --bg-color: #0b0f19;
-            --card-bg: rgba(17, 24, 39, 0.7);
-            --border-color: rgba(255, 255, 255, 0.08);
-            --text-primary: #f3f4f6;
-            --text-secondary: #9ca3af;
-            --accent-primary: #8b5cf6; /* Violet */
-            --accent-secondary: #6366f1; /* Indigo */
-            --accent-glow: rgba(139, 92, 246, 0.4);
-            --success-color: #10b981; /* Emerald */
-            --success-glow: rgba(16, 185, 129, 0.2);
+            --bg: #061014;
+            --panel: rgba(8, 24, 30, 0.92);
+            --panel-soft: rgba(12, 34, 42, 0.88);
+            --border: #21404d;
+            --border-strong: #2f5968;
+            --text: #f4fbff;
+            --muted: #9fc1cc;
+            --cyan: #18d7f2;
+            --cyan-soft: rgba(24, 215, 242, 0.12);
+            --green: #29c980;
+            --yellow: #ffc43d;
+            --danger: #f45f6b;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Inter', sans-serif;
-            transition: all 0.25s ease;
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            min-height: 100vh;
+            height: 100vh;
+            color: var(--text);
+            font-family: Arial, Helvetica, sans-serif;
+            background:
+                linear-gradient(90deg, rgba(40, 107, 112, 0.62) 0, rgba(40, 107, 112, 0.34) 155px, transparent 315px),
+                linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+                radial-gradient(circle at 30% 0%, rgba(30, 161, 170, 0.18), transparent 38%),
+                var(--bg);
+            background-size: auto, 40px 40px, 40px 40px, auto, auto;
+            padding: 16px;
+            overflow: hidden;
+        }
+
+        .shell {
+            width: min(1320px, calc(100vw - 32px));
+            height: calc(100vh - 32px);
+            margin: 0 auto;
+            display: grid;
+            grid-template-rows: 80px minmax(0, 1fr);
+            gap: 14px;
+        }
+
+        .topbar,
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+        }
+
+        .topbar {
+            min-height: 0;
+            height: 80px;
             display: flex;
-            justify-content: center;
             align-items: center;
-            position: relative;
-            overflow-x: hidden;
-            padding: 20px;
-        }
-
-        /* Arka plan parlama efektleri */
-        body::before {
-            content: "";
-            position: absolute;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, var(--accent-glow) 0%, rgba(0,0,0,0) 70%);
-            top: -100px;
-            left: -100px;
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        body::after {
-            content: "";
-            position: absolute;
-            width: 450px;
-            height: 450px;
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, rgba(0,0,0,0) 70%);
-            bottom: -150px;
-            right: -150px;
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 650px;
-            background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 40px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.8s ease;
+            justify-content: space-between;
+            padding: 16px;
+            margin-bottom: 0;
         }
 
         h1 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #fff 30%, #a78bfa 100%);
-            -webkit-text-fill-color: transparent;
+            font-size: 28px;
+            line-height: 1;
             margin-bottom: 8px;
-            text-align: center;
+            letter-spacing: 0;
         }
 
         .subtitle {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            text-align: center;
-            margin-bottom: 35px;
-            font-weight: 300;
+            color: #b7d9e4;
+            font-size: 13px;
         }
 
-        /* Form Elemanları */
-        .form-group {
+        .status-row {
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .pill {
+            border: 1px solid var(--border-strong);
+            border-radius: 999px;
+            padding: 8px 12px;
+            color: #bce8f3;
+            font-size: 12px;
+            background: rgba(9, 29, 36, 0.78);
+        }
+
+        .api-pill {
+            color: #20ff9a;
+            border-color: #2e5f69;
+        }
+
+        .api-pill::before {
+            content: "";
+            width: 9px;
+            height: 9px;
+            display: inline-block;
+            border-radius: 50%;
+            background: var(--green);
+            margin-right: 8px;
+            box-shadow: 0 0 12px rgba(41, 201, 128, 0.75);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 330px 1fr;
             gap: 12px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 30px;
+            min-height: 0;
+        }
+
+        .stack {
+            display: grid;
+            grid-template-rows: auto auto minmax(0, 1fr);
+            gap: 12px;
+            min-height: 0;
+        }
+
+        .panel {
+            padding: 12px;
+        }
+
+        .panel-header {
+            color: var(--cyan);
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            color: #c7e9f2;
+            margin: 12px 0 6px;
         }
 
         input {
             width: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            padding: 12px 16px;
-            border-radius: 10px;
-            font-size: 0.95rem;
+            height: 38px;
+            border: 1px solid var(--border-strong);
+            border-radius: 5px;
+            background: #071117;
+            color: var(--text);
+            padding: 0 12px;
+            font-size: 16px;
             outline: none;
         }
 
         input:focus {
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 10px var(--accent-glow);
+            border-color: var(--cyan);
+            box-shadow: 0 0 0 3px rgba(24, 215, 242, 0.11);
         }
 
         button {
+            border: 0;
+            border-radius: 5px;
+            color: white;
+            font-weight: 700;
             cursor: pointer;
-            border: none;
-            outline: none;
-            font-weight: 600;
-            font-size: 0.95rem;
-            border-radius: 10px;
-            padding: 12px 20px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            height: 36px;
+            padding: 0 14px;
+            background: #14303c;
+        }
+
+        button:hover {
+            filter: brightness(1.12);
         }
 
         .btn-add {
-            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
-            color: #fff;
-            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+            width: 100%;
+            margin-top: 10px;
+            background: linear-gradient(90deg, #1195a3, #1c9a61);
+            font-size: 16px;
         }
 
-        .btn-add:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+        .meta-panel {
+            min-height: 112px;
         }
 
-        .btn-add:active {
-            transform: translateY(0);
+        .kv {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 12px;
+            margin-top: 14px;
+            font-size: 13px;
+            font-weight: 700;
         }
 
-        /* Görev Listesi */
-        #taskList {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
+        .kv span:nth-child(even) {
+            text-align: right;
+        }
+
+        .checklist {
+            min-height: 0;
+        }
+
+        .checklist ul {
+            list-style: none;
+            margin-top: 14px;
+            display: grid;
+            gap: 12px;
+            color: #b9deea;
+            font-size: 14px;
+        }
+
+        .checklist li::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            display: inline-block;
+            border-radius: 50%;
+            background: var(--cyan);
+            margin-right: 9px;
+            transform: translateY(-1px);
+        }
+
+        .board {
+            min-height: 0;
+            display: grid;
+            grid-template-rows: auto auto auto minmax(0, 1fr);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .stat {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px;
+            background: rgba(5, 16, 22, 0.76);
+        }
+
+        .stat strong {
+            color: var(--cyan);
+            display: block;
+            font-size: 24px;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .stat span {
+            color: #c4dce3;
+            font-size: 12px;
+        }
+
+        .search-area {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .search-title {
+            color: var(--cyan);
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .search-row {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            gap: 8px;
+        }
+
+        .filter.active {
+            color: #001016;
+            background: var(--cyan);
+        }
+
+        .tasks {
+            display: grid;
+            gap: 10px;
+            padding-top: 12px;
+            min-height: 0;
+            overflow-y: auto;
+            padding-right: 6px;
+            align-content: start;
+        }
+
+        .tasks::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .tasks::-webkit-scrollbar-track {
+            background: rgba(5, 16, 22, 0.65);
+            border-radius: 999px;
+        }
+
+        .tasks::-webkit-scrollbar-thumb {
+            background: #225060;
+            border-radius: 999px;
+            border: 2px solid rgba(5, 16, 22, 0.65);
+        }
+
+        .tasks::-webkit-scrollbar-thumb:hover {
+            background: #2f6c7f;
         }
 
         .task {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            position: relative;
-            overflow: hidden;
-            animation: slideIn 0.4s ease;
+            min-height: 74px;
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--yellow);
+            border-radius: 6px;
+            background: rgba(5, 15, 21, 0.82);
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px;
+            align-items: center;
+            padding: 14px 12px;
         }
 
-        .task:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(139, 92, 246, 0.3);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-            transform: translateY(-2px);
+        .task.closed {
+            border-left-color: var(--green);
+            opacity: 0.62;
         }
 
-        .task-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-
-        .task-content {
-            flex: 1;
+        .task.closed .task-title {
+            text-decoration: line-through;
         }
 
         .task-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 4px;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 5px;
         }
 
         .task-desc {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            font-weight: 300;
+            color: #add3df;
+            font-size: 12px;
         }
 
-        /* Eylemler ve Butonlar */
         .task-actions {
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 4px;
             align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .tag {
+            border: 1px solid #0ca9bd;
+            color: var(--cyan);
+            border-radius: 999px;
+            padding: 5px 9px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .state {
+            border: 1px solid var(--yellow);
+            color: var(--yellow);
+            border-radius: 999px;
+            padding: 5px 9px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .state.closed {
+            border-color: var(--green);
+            color: var(--green);
         }
 
         .btn-complete {
-            background: rgba(16, 185, 129, 0.1);
-            color: var(--success-color);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            padding: 6px 12px;
-            font-size: 0.8rem;
-            border-radius: 6px;
+            height: 30px;
+            font-size: 12px;
+            background: #14303c;
         }
 
-        .btn-complete:hover {
-            background: var(--success-color);
-            color: #fff;
-            box-shadow: 0 0 12px var(--success-glow);
+        .btn-attach,
+        .btn-delete {
+            height: 30px;
+            font-size: 12px;
+            background: #142a35;
         }
 
-        .btn-attach {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-            padding: 6px 12px;
-            font-size: 0.8rem;
-            border-radius: 6px;
-        }
-
-        .btn-attach:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: var(--accent-primary);
+        .btn-delete:hover {
+            background: #4a1d26;
         }
 
         .attachment-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(139, 92, 246, 0.15);
-            color: #a78bfa;
-            border: 1px solid rgba(139, 92, 246, 0.25);
-            padding: 6px 12px;
-            font-size: 0.8rem;
-            border-radius: 6px;
+            color: var(--cyan);
+            border: 1px solid var(--border-strong);
+            border-radius: 5px;
+            padding: 7px 10px;
             text-decoration: none;
-            font-weight: 500;
+            font-size: 12px;
+            font-weight: 700;
         }
 
-        .attachment-link:hover {
-            background: var(--accent-primary);
-            color: #fff;
-            box-shadow: 0 0 10px var(--accent-glow);
+        .empty {
+            color: var(--muted);
+            padding: 26px 8px;
+            text-align: center;
         }
 
-        /* Tamamlanmış Görev Tasarımı */
-        .task.completed {
-            opacity: 0.6;
-            background: rgba(255, 255, 255, 0.01);
-            border-color: rgba(255, 255, 255, 0.03);
-        }
-
-        .task.completed .task-title {
-            text-decoration: line-through;
-            color: var(--text-secondary);
-        }
-
-        .task.completed::before {
-            content: "✓ Tamamlandı";
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            background: rgba(16, 185, 129, 0.2);
-            color: var(--success-color);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            padding: 3px 8px;
-            border-radius: 6px;
-            font-size: 0.7rem;
-            font-weight: 600;
-        }
-
-        /* Animasyonlar */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Mobil Uyum */
-        @media (max-width: 480px) {
-            .container {
-                padding: 24px;
+        @media (max-width: 860px) {
+            body {
+                height: auto;
+                min-height: 100vh;
+                overflow: auto;
             }
-            h1 {
-                font-size: 1.8rem;
+
+            .shell {
+                height: auto;
+                display: block;
+            }
+
+            .topbar,
+            .grid,
+            .search-row,
+            .task {
+                display: block;
+            }
+
+            .topbar {
+                height: auto;
+                margin-bottom: 12px;
+            }
+
+            .status-row,
+            .task-actions {
+                justify-content: flex-start;
+                margin-top: 12px;
+            }
+
+            .grid {
+                display: grid;
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .filter {
+                margin-top: 8px;
+            }
+
+            .tasks {
+                max-height: none;
+                overflow: visible;
+                padding-right: 0;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>To-Do List Manager</h1>
-        <div class="subtitle">Bulut Mimarilerinde Test Mühendisliği Dönem Projesi</div>
-        
-        <div class="form-group">
-            <input type="text" id="taskTitle" placeholder="Görev Başlığı (Zorunlu)">
-            <input type="text" id="taskDesc" placeholder="Görev Açıklaması (Opsiyonel)">
-            <button class="btn-add" onclick="addTask()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                Ekle
-            </button>
-        </div>
+    <main class="shell">
+        <header class="topbar">
+            <div>
+                <h1>To-Do List Manager</h1>
+                <p class="subtitle">Secure cloud delivery task board for test engineering demos</p>
+            </div>
+            <div class="status-row">
+                <span class="pill">Demo Workspace</span>
+                <span class="pill">FastAPI 0.2.0</span>
+                <span class="pill api-pill">API ONLINE</span>
+            </div>
+        </header>
 
-        <div id="taskList">
-            <!-- Görevler buraya JS ile yüklenecek -->
-        </div>
-    </div>
+        <section class="grid">
+            <aside class="stack">
+                <section class="panel">
+                    <div class="panel-header">
+                        <span>New Task</span>
+                        <span>Sec-Ops</span>
+                    </div>
+                    <label for="taskTitle">Title</label>
+                    <input type="text" id="taskTitle" placeholder="Patch exposed endpoint">
+
+                    <label for="taskDesc">Description</label>
+                    <input type="text" id="taskDesc" placeholder="Add tests, verify metrics, close risk">
+
+                    <label for="taskTags">Tag</label>
+                    <input type="text" id="taskTags" placeholder="incident, ci, k8s, s3">
+
+                    <button class="btn-add" id="addTaskButton">Ekle</button>
+                </section>
+
+                <section class="panel meta-panel">
+                    <div class="panel-header">Session</div>
+                    <div class="kv">
+                        <span>Operator</span><span>Demo User</span>
+                        <span>Environment</span><span>LocalStack</span>
+                        <span>Evidence</span><span>Metrics enabled</span>
+                    </div>
+                </section>
+
+                <section class="panel checklist">
+                    <div class="panel-header">Presentation checklist</div>
+                    <ul>
+                        <li>API endpoints visible in Swagger</li>
+                        <li>Prometheus metrics exposed</li>
+                        <li>Tasks, tags, S3 attachments ready</li>
+                    </ul>
+                </section>
+            </aside>
+
+            <section class="panel board">
+                <div class="panel-header">
+                    <span>Operations Board</span>
+                    <span id="closedRate">0% Closed</span>
+                </div>
+
+                <div class="stats">
+                    <div class="stat"><strong id="totalCount">0</strong><span>Total tasks</span></div>
+                    <div class="stat"><strong id="openCount">0</strong><span>Open</span></div>
+                    <div class="stat"><strong id="closedCount">0</strong><span>Closed</span></div>
+                    <div class="stat"><strong id="visibleCount">0</strong><span>Visible</span></div>
+                </div>
+
+                <div class="search-area">
+                    <div class="search-title">Search</div>
+                    <div class="search-row">
+                        <input id="searchInput" type="search" placeholder="Search tasks or tags">
+                        <button class="filter active" data-filter="all">All</button>
+                        <button class="filter" data-filter="open">Open</button>
+                        <button class="filter" data-filter="closed">Closed</button>
+                    </div>
+                </div>
+
+                <div class="tasks" id="taskList"></div>
+            </section>
+        </section>
+    </main>
 
     <script>
-        const API_URL = "http://localhost:8000";
+        const API_URL = window.location.origin;
+        let tasks = [];
+        let activeFilter = "all";
+
+        document.getElementById("addTaskButton").addEventListener("click", addTask);
+        document.getElementById("searchInput").addEventListener("input", renderTasks);
+        document.querySelectorAll(".filter").forEach((button) => {
+            button.addEventListener("click", () => {
+                document.querySelectorAll(".filter").forEach((item) => item.classList.remove("active"));
+                button.classList.add("active");
+                activeFilter = button.dataset.filter;
+                renderTasks();
+            });
+        });
 
         async function fetchTasks() {
             try {
                 const res = await fetch(`${API_URL}/tasks`);
-                const tasks = await res.json();
-                const list = document.getElementById("taskList");
-                list.innerHTML = "";
-                
-                tasks.forEach(task => {
-                    const div = document.createElement("div");
-                    div.className = "task";
-                    if (task.is_completed) div.classList.add("completed");
-                    
-                    div.innerHTML = `
-                        <div class="task-header">
-                            <div class="task-content">
-                                <div class="task-title">${task.title}</div>
-                                ${task.description ? `<div class="task-desc">${task.description}</div>` : ''}
-                            </div>
-                        </div>
-                        <div class="task-actions">
-                            ${!task.is_completed ? `<button class="btn-complete" onclick="completeTask(${task.id})">Tamamla</button>` : ''}
-                            
-                            <!-- Gizli Dosya Girişi -->
-                            <input type="file" id="file-${task.id}" style="display:none" onchange="uploadAttachment(${task.id})">
-                            <button class="btn-attach" onclick="document.getElementById('file-${task.id}').click()">📎 Dosya Ekle</button>
-                            
-                            ${task.attachment_url ? `
-                                <a href="${task.attachment_url}" target="_blank" class="attachment-link">
-                                    👁️ Eki Görüntüle
-                                </a>
-                            ` : ''}
-                        </div>
-                    `;
-                    list.appendChild(div);
-                });
+                tasks = await res.json();
+                renderTasks();
             } catch (err) {
                 console.error("Görevler yüklenirken hata oluştu:", err);
             }
         }
 
+        function getFilteredTasks() {
+            const term = document.getElementById("searchInput").value.trim().toLowerCase();
+            return tasks.filter((task) => {
+                const tags = task.tags || [];
+                const haystack = [task.title, task.description, ...tags].join(" ").toLowerCase();
+                const matchesSearch = !term || haystack.includes(term);
+                const matchesFilter =
+                    activeFilter === "all" ||
+                    (activeFilter === "open" && !task.is_completed) ||
+                    (activeFilter === "closed" && task.is_completed);
+                return matchesSearch && matchesFilter;
+            });
+        }
+
+        function renderStats(visibleTasks) {
+            const total = tasks.length;
+            const closed = tasks.filter((task) => task.is_completed).length;
+            const open = total - closed;
+            const rate = total ? Math.round((closed / total) * 100) : 0;
+
+            document.getElementById("totalCount").textContent = total;
+            document.getElementById("openCount").textContent = open;
+            document.getElementById("closedCount").textContent = closed;
+            document.getElementById("visibleCount").textContent = visibleTasks.length;
+            document.getElementById("closedRate").textContent = `${rate}% Closed`;
+        }
+
+        function renderTasks() {
+            const visibleTasks = getFilteredTasks();
+            const list = document.getElementById("taskList");
+            list.innerHTML = "";
+            renderStats(visibleTasks);
+
+            if (!visibleTasks.length) {
+                const empty = document.createElement("div");
+                empty.className = "empty";
+                empty.textContent = "Bu filtrede gösterilecek görev yok.";
+                list.appendChild(empty);
+                return;
+            }
+
+            visibleTasks.forEach((task) => {
+                const row = document.createElement("article");
+                row.className = `task${task.is_completed ? " completed closed" : ""}`;
+
+                const content = document.createElement("div");
+                const title = document.createElement("div");
+                title.className = "task-title";
+                title.textContent = task.title;
+                content.appendChild(title);
+
+                if (task.description) {
+                    const description = document.createElement("div");
+                    description.className = "task-desc";
+                    description.textContent = task.description;
+                    content.appendChild(description);
+                }
+
+                const actions = document.createElement("div");
+                actions.className = "task-actions";
+
+                const tags = task.tags && task.tags.length ? task.tags : ["task"];
+                tags.slice(0, 2).forEach((tagName) => {
+                    const tag = document.createElement("span");
+                    tag.className = "tag";
+                    tag.textContent = `#${tagName}`;
+                    actions.appendChild(tag);
+                });
+
+                const state = document.createElement("span");
+                state.className = `state${task.is_completed ? " closed" : ""}`;
+                state.textContent = task.is_completed ? "CLOSED" : "OPEN";
+                actions.appendChild(state);
+
+                if (!task.is_completed) {
+                    const completeButton = document.createElement("button");
+                    completeButton.className = "btn-complete";
+                    completeButton.textContent = "Tamamla";
+                    completeButton.addEventListener("click", () => completeTask(task.id));
+                    actions.appendChild(completeButton);
+                }
+
+                const fileInput = document.createElement("input");
+                fileInput.type = "file";
+                fileInput.style.display = "none";
+                fileInput.addEventListener("change", () => uploadAttachment(task.id, fileInput));
+                actions.appendChild(fileInput);
+
+                const attachButton = document.createElement("button");
+                attachButton.className = "btn-attach";
+                attachButton.textContent = "Dosya";
+                attachButton.addEventListener("click", () => fileInput.click());
+                actions.appendChild(attachButton);
+
+                if (task.attachment_url) {
+                    const link = document.createElement("a");
+                    link.href = task.attachment_url;
+                    link.target = "_blank";
+                    link.rel = "noopener noreferrer";
+                    link.className = "attachment-link";
+                    link.textContent = "Ek";
+                    actions.appendChild(link);
+                }
+
+                const deleteButton = document.createElement("button");
+                deleteButton.className = "btn-delete";
+                deleteButton.textContent = "Sil";
+                deleteButton.addEventListener("click", () => deleteTask(task.id));
+                actions.appendChild(deleteButton);
+
+                row.appendChild(content);
+                row.appendChild(actions);
+                list.appendChild(row);
+            });
+        }
+
         async function addTask() {
-            const title = document.getElementById("taskTitle").value;
-            const desc = document.getElementById("taskDesc").value;
-            if (!title) return alert("Görev başlığı girmek zorunludur!");
+            const titleInput = document.getElementById("taskTitle");
+            const descInput = document.getElementById("taskDesc");
+            const tagsInput = document.getElementById("taskTags");
+            const title = titleInput.value.trim();
+            const description = descInput.value.trim();
+            const tags = tagsInput.value.trim();
+
+            if (!title) {
+                alert("Görev başlığı girmek zorunludur!");
+                return;
+            }
 
             try {
-                await fetch(`${API_URL}/tasks?title=${encodeURIComponent(title)}&description=${encodeURIComponent(desc)}`, {
-                    method: "POST"
-                });
-                
-                document.getElementById("taskTitle").value = "";
-                document.getElementById("taskDesc").value = "";
-                fetchTasks();
+                const params = new URLSearchParams({ title, description, tags });
+                const res = await fetch(`${API_URL}/tasks?${params.toString()}`, { method: "POST" });
+                if (!res.ok) throw new Error("Task create failed");
+                titleInput.value = "";
+                descInput.value = "";
+                tagsInput.value = "";
+                await fetchTasks();
             } catch (err) {
                 console.error("Görev eklenirken hata oluştu:", err);
                 alert("Görev eklenemedi!");
@@ -394,49 +716,47 @@
 
         async function completeTask(id) {
             try {
-                await fetch(`${API_URL}/tasks/${id}/complete`, { method: "PUT" });
-                fetchTasks();
+                const res = await fetch(`${API_URL}/tasks/${id}/complete`, { method: "PUT" });
+                if (!res.ok) throw new Error("Task complete failed");
+                await fetchTasks();
             } catch (err) {
                 console.error("Görev tamamlanırken hata oluştu:", err);
                 alert("Görev tamamlanamadı!");
             }
         }
 
-        async function uploadAttachment(id) {
-            const fileInput = document.getElementById(`file-${id}`);
+        async function deleteTask(id) {
+            try {
+                const res = await fetch(`${API_URL}/tasks/${id}`, { method: "DELETE" });
+                if (!res.ok) throw new Error("Task delete failed");
+                await fetchTasks();
+            } catch (err) {
+                console.error("Görev silinirken hata oluştu:", err);
+                alert("Görev silinemedi!");
+            }
+        }
+
+        async function uploadAttachment(id, fileInput) {
             if (!fileInput.files || fileInput.files.length === 0) return;
-            
+
             const formData = new FormData();
             formData.append("file", fileInput.files[0]);
-            
-            // UI yükleme bildirim durumu
-            const attachBtn = fileInput.nextElementSibling;
-            const originalText = attachBtn.innerText;
-            attachBtn.innerText = "⏳ Yükleniyor...";
-            attachBtn.disabled = true;
 
             try {
                 const res = await fetch(`${API_URL}/tasks/${id}/attachment`, {
                     method: "POST",
-                    body: formData
+                    body: formData,
                 });
-                if (res.ok) {
-                    alert("Dosya başarıyla S3'e (LocalStack) yüklendi ve göreve eklendi!");
-                    fetchTasks();
-                } else {
-                    alert("S3 yükleme işlemi başarısız!");
-                    attachBtn.innerText = originalText;
-                    attachBtn.disabled = false;
-                }
+                if (!res.ok) throw new Error("Attachment upload failed");
+                await fetchTasks();
             } catch (err) {
                 console.error("Attachment yükleme hatası:", err);
                 alert("Yükleme sırasında teknik bir hata oluştu!");
-                attachBtn.innerText = originalText;
-                attachBtn.disabled = false;
+            } finally {
+                fileInput.value = "";
             }
         }
 
-        // Sayfa yüklendiğinde görevleri çek
         window.onload = fetchTasks;
     </script>
 </body>

@@ -8,6 +8,7 @@ import os
 import tempfile
 from prometheus_fastapi_instrumentator import Instrumentator
 from . import models
+from .observability import setup_observability
 from src.services.s3 import upload_file
 
 # Demo Mesajı
@@ -30,6 +31,7 @@ app = FastAPI(
 
 # Prometheus Metriklerini Ekle
 Instrumentator().instrument(app).expose(app)
+setup_observability(app)
 
 templates = Jinja2Templates(directory="src/templates")
 
@@ -59,17 +61,21 @@ def health_check():
 def list_tasks(db: Session = Depends(get_db)):
     """Tüm görevleri listeler."""
     tasks = db.query(models.Task).all()
-    return tasks
+    return [serialize_task(task) for task in tasks]
 
 
 @app.post("/tasks")
-def create_task(title: str, description: str = None, db: Session = Depends(get_db)):
+def create_task(
+    title: str, description: str = None, tags: str = None, db: Session = Depends(get_db)
+):
     """Yeni bir görev oluşturur."""
     new_task = models.Task(title=title, description=description)
+    for tag_name in parse_tags(tags):
+        new_task.tags.append(models.Tag(name=tag_name))
     db.add(new_task)
     db.commit()
     db.refresh(new_task)
-    return new_task
+    return serialize_task(new_task)
 
 
 @app.put("/tasks/{task_id}/complete")
@@ -81,7 +87,19 @@ def complete_task(task_id: int, db: Session = Depends(get_db)):
     task.is_completed = True
     db.commit()
     db.refresh(task)
-    return {"message": "Task completed", "task": task}
+    return {"message": "Task completed", "task": serialize_task(task)}
+
+
+@app.delete("/tasks/{task_id}")
+def delete_task(task_id: int, db: Session = Depends(get_db)):
+    """Belirtilen görevi siler."""
+    task = db.query(models.Task).filter(models.Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    db.delete(task)
+    db.commit()
+    return {"message": "Task deleted"}
 
 
 @app.post("/tasks/{task_id}/attachment")
@@ -109,4 +127,21 @@ def add_attachment(
     db.commit()
     db.refresh(task)
 
-    return {"message": "Attachment uploaded successfully", "task": task}
+    return {"message": "Attachment uploaded successfully", "task": serialize_task(task)}
+
+
+def parse_tags(tags: str = None):
+    if not tags:
+        return []
+    return [tag.strip() for tag in tags.split(",") if tag.strip()]
+
+
+def serialize_task(task: models.Task):
+    return {
+        "id": task.id,
+        "title": task.title,
+        "description": task.description,
+        "is_completed": task.is_completed,
+        "attachment_url": task.attachment_url,
+        "tags": [tag.name for tag in task.tags],
+    }

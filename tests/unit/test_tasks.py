@@ -26,6 +26,18 @@ def test_create_task(client, db_session):
     assert task_in_db.title == "Test Task"
 
 
+def test_create_task_with_tags(client):
+    """Görev oluştururken virgülle ayrılmış etiketlerin döndüğünü test eder."""
+    response = client.post(
+        "/tasks?title=Tagged Task&description=Tagged Desc&tags=ci,k8s,s3"
+    )
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["title"] == "Tagged Task"
+    assert data["tags"] == ["ci", "k8s", "s3"]
+
+
 def test_list_tasks(client, db_session):
     """Görevleri listeleme endpoint'ini test eder."""
     # Factory ile DB'ye 3 tane task ekle
@@ -35,6 +47,23 @@ def test_list_tasks(client, db_session):
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 3
+
+
+def test_delete_task(client, db_session):
+    """Bir görevin silinebildiğini test eder."""
+    task = TaskFactory()
+
+    response = client.delete(f"/tasks/{task.id}")
+    assert response.status_code == 200
+    assert response.json() == {"message": "Task deleted"}
+
+    assert db_session.query(Task).filter(Task.id == task.id).first() is None
+
+
+def test_delete_task_not_found(client):
+    """Olmayan görev silinirken 404 dönmesini test eder."""
+    response = client.delete("/tasks/999")
+    assert response.status_code == 404
 
 
 def test_complete_task(client, db_session):
