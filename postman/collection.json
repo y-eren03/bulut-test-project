@@ -1,122 +1,95 @@
 {
   "info": {
     "name": "To-Do List Manager API",
-    "description": "Test Collection for To-Do List Manager",
+    "description": "Newman smoke collection for the cloud testing project.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
-  "item": [
+  "variable": [
     {
-      "name": "Get Health Check",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8000",
-          "path": [
-            "health"
-          ]
-        }
-      }
+      "key": "baseUrl",
+      "value": "http://localhost:8000"
     },
     {
-      "name": "Get Tasks",
+      "key": "taskId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('health is ok', function () {",
+              "  pm.response.to.have.status(200);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
       "request": {
         "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/tasks",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8000",
-          "path": [
-            "tasks"
-          ]
-        }
+        "url": "{{baseUrl}}/health"
       }
     },
     {
       "name": "Create Task",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('task created', function () {",
+              "  pm.response.to.have.status(200);",
+              "  const body = pm.response.json();",
+              "  pm.collectionVariables.set('taskId', body.id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
       "request": {
         "method": "POST",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/tasks?title=PostmanTask&description=TestFromPostman",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8000",
-          "path": [
-            "tasks"
-          ],
-          "query": [
-            {
-              "key": "title",
-              "value": "PostmanTask"
-            },
-            {
-              "key": "description",
-              "value": "TestFromPostman"
-            }
-          ]
-        }
-      }
-    }
-    ,{
-      "name": "Complete Task",
-      "request": {
-        "method": "PUT",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8000/tasks/1/complete",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8000",
-          "path": [
-            "tasks",
-            "1",
-            "complete"
-          ]
-        }
+        "url": "{{baseUrl}}/tasks?title=PostmanTask&description=PipelineSmoke"
       }
     },
     {
-      "name": "Upload Attachment",
+      "name": "Attach Tag",
       "request": {
         "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "formdata",
-          "formdata": [
-            {
-              "key": "file",
-              "type": "file",
-              "src": []
-            }
-          ]
-        },
-        "url": {
-          "raw": "http://localhost:8000/tasks/1/attachment",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8000",
-          "path": [
-            "tasks",
-            "1",
-            "attachment"
-          ]
-        }
+        "url": "{{baseUrl}}/tasks/{{taskId}}/tags?name=ci"
+      }
+    },
+    {
+      "name": "Get Created Task",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/tasks/{{taskId}}"
+      }
+    },
+    {
+      "name": "Task Stats",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/tasks/stats/overview"
+      }
+    },
+    {
+      "name": "Complete Task",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/tasks/{{taskId}}/complete"
+      }
+    },
+    {
+      "name": "Delete Task",
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/tasks/{{taskId}}"
       }
     }
   ]

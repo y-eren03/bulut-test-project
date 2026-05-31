@@ -2,14 +2,14 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-  test-and-build:
+  lint-test-build-deploy-smoke:
     runs-on: ubuntu-latest
-    
+
     services:
       postgres:
         image: postgres:16-alpine
@@ -26,55 +26,52 @@ jobs:
           --health-retries 5
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Run Lint
-      run: |
-        black src tests --check
+      - name: Lint
+        run: black src tests --check
 
-    - name: Install Playwright Browsers
-      run: |
-        python -m playwright install chromium --with-deps
+      - name: Install Playwright browsers
+        run: python -m playwright install chromium --with-deps
 
-    - name: Run Pytest & Coverage
-      env:
-        DATABASE_URL: postgresql://user:password@localhost:5432/tododb
-      run: |
-        pytest --cov=src --cov-fail-under=70
+      - name: Pytest with coverage
+        env:
+          DATABASE_URL: postgresql://user:password@localhost:5432/tododb
+        run: pytest --cov=src --cov-fail-under=70
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
+      - name: Docker build
+        run: docker build -t todo-list-manager:${{ github.sha }} .
 
-    - name: Install Newman
-      run: npm install -g newman
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
 
-    - name: Run Newman Tests & Smoke Test
-      env:
-        DATABASE_URL: postgresql://user:password@localhost:5432/tododb
-      run: |
-        # Start app in background
-        uvicorn src.main:app --host 0.0.0.0 --port 8000 &
-        sleep 5
-        
-        # Smoke test via curl
-        curl -f http://localhost:8000/health || exit 1
-        
-        # Run Newman
-        newman run postman/collection.json
+      - name: Deploy manifest validation
+        run: kubectl apply --dry-run=client --validate=false -f k8s/
 
-    - name: Docker Build
-      run: |
-        docker build -t todo-list-manager:${{ github.sha }} .
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Newman
+        run: npm install -g newman
+
+      - name: Smoke test with Newman
+        env:
+          DATABASE_URL: postgresql://user:password@localhost:5432/tododb
+        run: |
+          uvicorn src.main:app --host 0.0.0.0 --port 8000 &
+          sleep 5
+          curl -f http://localhost:8000/health
+          newman run postman/collection.json

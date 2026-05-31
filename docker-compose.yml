@@ -46,6 +46,8 @@ services:
     image: grafana/grafana
     volumes:
       - ./monitoring/grafana-datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+      - ./monitoring/grafana-dashboard-provider.yml:/etc/grafana/provisioning/dashboards/dashboard.yml
+      - ./monitoring/grafana-dashboard.json:/var/lib/grafana/dashboards/todo-dashboard.json
     ports:
       - "3000:3000"
     depends_on:

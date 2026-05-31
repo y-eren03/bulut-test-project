@@ -14,7 +14,7 @@ psycopg2-binary = "^2.9.9"
 boto3 = "^1.33.0"
 pydantic = "^2.5.2"
 pydantic-settings = "^2.1.0"
-jinja2 = "^3.1.2" # Frontend templating için
+jinja2 = "^3.1.2" # Frontend templating
 python-multipart = "^0.0.6"
 prometheus-fastapi-instrumentator = "^6.1.0"
 
