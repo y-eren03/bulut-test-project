@@ -20,7 +20,7 @@ def test_create_task(client, db_session):
     assert data["description"] == "Test Desc"
     assert data["is_completed"] is False
 
-    # DB'de kayıtlı mı kontrolü
+    # Veritabanında (DB) görevin doğru kaydedilip kaydedilmediğini doğrula
     task_in_db = db_session.query(Task).filter(Task.id == data["id"]).first()
     assert task_in_db is not None
     assert task_in_db.title == "Test Task"
@@ -40,7 +40,7 @@ def test_create_task_with_tags(client):
 
 def test_list_tasks(client, db_session):
     """Görevleri listeleme endpoint'ini test eder."""
-    # Factory ile DB'ye 3 tane task ekle
+    # Factory Boy kullanarak veritabanına sahte (mock) 3 adet görev (task) ekle
     TaskFactory.create_batch(3)
 
     response = client.get("/tasks")
@@ -77,7 +77,7 @@ def test_complete_task(client, db_session):
     assert data["message"] == "Task completed"
     assert data["task"]["is_completed"] is True
 
-    # DB kontrolü
+    # Gerçekten veritabanında güncellendiğinden (is_completed=True) emin ol
     task_in_db = db_session.query(Task).filter(Task.id == task.id).first()
     assert task_in_db.is_completed is True
 

@@ -36,7 +36,7 @@ setup_observability(app)
 templates = Jinja2Templates(directory="src/templates")
 
 
-# Dependency: Her istek için DB session oluştur ve kapat
+# Her HTTP isteği (request) için veritabanı oturumu oluşturur ve sonunda kapatır
 def get_db():
     db = SessionLocal()
     try:
@@ -59,19 +59,25 @@ def health_check():
 
 @app.get("/tasks")
 def list_tasks(db: Session = Depends(get_db)):
-    """Tüm görevleri listeler."""
-    tasks = db.query(models.Task).all()
+    """Tüm görevleri en yeniden eskiye doğru sıralayarak listeler."""
+    tasks = db.query(models.Task).order_by(models.Task.id.desc()).all()
     return [serialize_task(task) for task in tasks]
 
 
 @app.post("/tasks")
 def create_task(
-    title: str, description: str = None, tags: str = None, db: Session = Depends(get_db)
+    title: str, description: str | None = None, tags: str | None = None, db: Session = Depends(get_db)
 ):
-    """Yeni bir görev oluşturur."""
-    new_task = models.Task(title=title, description=description)
-    for tag_name in parse_tags(tags):
-        new_task.tags.append(models.Tag(name=tag_name))
+    """Verilen başlık ve açıklama ile veritabanına yeni bir görev ekler."""
+    clean_title = title.strip()
+    if not clean_title:
+        raise HTTPException(status_code=422, detail="Task title cannot be empty")
+
+    new_task = models.Task(title=clean_title, description=description)
+    if tags:
+        for tag_name in [t.strip() for t in tags.split(",") if t.strip()]:
+            new_task.tags.append(models.Tag(name=tag_name))
+
     db.add(new_task)
     db.commit()
     db.refresh(new_task)
@@ -80,7 +86,7 @@ def create_task(
 
 @app.put("/tasks/{task_id}/complete")
 def complete_task(task_id: int, db: Session = Depends(get_db)):
-    """Belirtilen görevi tamamlanmış olarak işaretler."""
+    """Belirtilen ID'ye sahip görevi tamamlandı (completed) olarak işaretler."""
     task = db.query(models.Task).filter(models.Task.id == task_id).first()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
@@ -100,6 +106,27 @@ def delete_task(task_id: int, db: Session = Depends(get_db)):
     db.delete(task)
     db.commit()
     return {"message": "Task deleted"}
+
+
+@app.get("/tasks/stats/overview")
+def task_stats(db: Session = Depends(get_db)):
+    """Görevlerin toplam, tamamlanma ve etiket istatistiklerini hesaplayıp döndürür."""
+    total = db.query(models.Task).count()
+    completed = db.query(models.Task).filter(models.Task.is_completed.is_(True)).count()
+    open_count = total - completed
+    tag_rows = (
+        db.query(models.Tag.name, func.count(models.Tag.id))
+        .group_by(models.Tag.name)
+        .order_by(func.count(models.Tag.id).desc())
+        .all()
+    )
+    return {
+        "total": total,
+        "open": open_count,
+        "completed": completed,
+        "completion_rate": round((completed / total) * 100, 2) if total else 0,
+        "tags": [{"name": name, "count": count} for name, count in tag_rows],
+    }
 
 
 @app.post("/tasks/{task_id}/attachment")

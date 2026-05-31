@@ -34,3 +34,4 @@ uvicorn.*.log
 docs/screenshots/*.png
 !docs/screenshots/.gitkeep
 Talimatlar.pdf
+test.txt
