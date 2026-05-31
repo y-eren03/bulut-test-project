@@ -66,7 +66,10 @@ def list_tasks(db: Session = Depends(get_db)):
 
 @app.post("/tasks")
 def create_task(
-    title: str, description: str | None = None, tags: str | None = None, db: Session = Depends(get_db)
+    title: str,
+    description: str | None = None,
+    tags: str | None = None,
+    db: Session = Depends(get_db),
 ):
     """Verilen başlık ve açıklama ile veritabanına yeni bir görev ekler."""
     clean_title = title.strip()

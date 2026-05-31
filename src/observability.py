@@ -22,7 +22,7 @@ def setup_observability(app):
     # Servis adını belirle ve izleyiciyi (Tracer) oluştur
     resource = Resource.create({"service.name": "todo-list-manager"})
     provider = TracerProvider(resource=resource)
-    
+
     # Trace verilerini iletmek için dışa aktarıcıyı (Exporter) yapılandır
     exporter = OTLPSpanExporter(
         endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317"),
@@ -30,7 +30,7 @@ def setup_observability(app):
     )
     provider.add_span_processor(BatchSpanProcessor(exporter))
     trace.set_tracer_provider(provider)
-    
+
     # FastAPI uygulamasına otomatik ölçümleme (instrumentation) ekle
     FastAPIInstrumentor.instrument_app(app)
     return True
