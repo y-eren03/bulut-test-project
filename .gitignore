@@ -1,9 +1,36 @@
-.venv/
+# Python & Caches
 __pycache__/
 *.py[cod]
+*$py.class
 .pytest_cache/
 htmlcov/
 .coverage
+coverage.xml
+
+# Databases
+*.db
+todos.db
+*.sqlite3
+
+# Environment
+.env
+.venv/
+env/
+venv/
+ENV/
+
+# Logs
+*.log
 uvicorn.*.log
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Documentation & Screenshots (keep gitkeep)
 docs/screenshots/*.png
 !docs/screenshots/.gitkeep
+Talimatlar.pdf
