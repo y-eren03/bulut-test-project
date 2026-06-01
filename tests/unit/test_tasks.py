@@ -189,7 +189,7 @@ def test_task_stats(client, db_session):
     """Görev istatistiklerinin doğru döndüğünü test eder."""
     TaskFactory(is_completed=True)
     TaskFactory(is_completed=False)
-    
+
     response = client.get("/tasks/stats/overview")
     assert response.status_code == 200
     data = response.json()
