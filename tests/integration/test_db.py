@@ -1,37 +1,83 @@
-import pytest
+import time
+
 import docker
+import psycopg2
+import pytest
 from docker.errors import DockerException
-from testcontainers.postgres import PostgresContainer
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 from src.models import Base, Task
 
 
 @pytest.fixture(scope="module")
-def postgres_container():
-    """Testcontainers ile PostgreSQL container'ı başlatır."""
+def postgres_url():
+    """Docker ile PostgreSQL başlatır ve yerel ağ (localhost) bağlantı URL'sini döndürür."""
     try:
-        docker.from_env().ping()
+        client = docker.from_env()
+        client.ping()
     except DockerException as exc:
-        pytest.skip(f"Docker daemon is not available for Testcontainers: {exc}")
+        pytest.skip(f"Entegrasyon testleri için Docker servisine ulaşılamıyor: {exc}")
 
-    postgres = PostgresContainer("postgres:16-alpine")
-    with postgres as container:
-        yield container
+    image = "postgres:16-alpine"
+    client.images.pull(image)
+    container = client.containers.run(
+        image,
+        detach=True,
+        environment={
+            "POSTGRES_USER": "test",
+            "POSTGRES_PASSWORD": "test",
+            "POSTGRES_DB": "test",
+        },
+        ports={"5432/tcp": None},
+    )
+
+    try:
+        container.reload()
+        host_port = container.attrs["NetworkSettings"]["Ports"]["5432/tcp"][0][
+            "HostPort"
+        ]
+        connection_url = f"postgresql://test:test@localhost:{host_port}/test"
+
+        # Veritabanının bağlantı kabul edene kadar hazır olmasını bekle
+        deadline = time.time() + 30
+        while time.time() < deadline:
+            try:
+                conn = psycopg2.connect(
+                    host="localhost",
+                    port=host_port,
+                    dbname="test",
+                    user="test",
+                    password="test",
+                )
+                conn.close()
+                break
+            except psycopg2.OperationalError:
+                time.sleep(0.5)
+        else:
+            pytest.fail("PostgreSQL container'ı belirtilen sürede hazır olamadı")
+
+        yield connection_url
+    finally:
+        # Testler bittikten sonra container'ı durdur ve temizle
+        container.stop(timeout=5)
+        container.remove(force=True)
 
 
 @pytest.fixture(scope="module")
-def db_engine(postgres_container):
-    """Container üzerinden DB bağlantısı (Engine) oluşturur."""
-    engine = create_engine(postgres_container.get_connection_url())
+def db_engine(postgres_url):
+    """PostgreSQL container'ı için SQLAlchemy bağlantı motoru (engine) oluşturur."""
+    engine = create_engine(postgres_url)
+    # Veritabanı tablolarını oluştur
     Base.metadata.create_all(engine)
     yield engine
+    # Test bitiminde tabloları sil
     Base.metadata.drop_all(engine)
 
 
 @pytest.fixture(scope="function")
 def integration_db_session(db_engine):
-    """Her test için yeni bir DB oturumu açar."""
+    """Her entegrasyon testi için yepyeni bir veritabanı oturumu açar."""
     TestingSessionLocal = sessionmaker(
         autocommit=False, autoflush=False, bind=db_engine
     )
@@ -42,12 +88,10 @@ def integration_db_session(db_engine):
 
 def test_create_and_read_task_integration(integration_db_session):
     """PostgreSQL container'ı üzerinde görev oluşturup okumayı test eder."""
-    # Yeni görev ekle
     new_task = Task(title="Integration Test Task", description="Testing DB container")
     integration_db_session.add(new_task)
     integration_db_session.commit()
 
-    # DB'den oku
     saved_task = (
         integration_db_session.query(Task)
         .filter(Task.title == "Integration Test Task")
