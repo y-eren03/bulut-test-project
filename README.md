@@ -90,5 +90,8 @@ Adımlar:
 3. Newman ile Postman API testleri
 4. Docker imajının build edilmesi
 
+## Canlı Demo Videosu
+Sunum yedek videosu eklenecektir: https://drive.google.com/file/d/1OspPplRVJ4-kCvRXSKRqPPkU2-JREnUF/view?usp=sharing
+
 ---
 *Marmara Üniversitesi - Bulut Mimarilerinde Test Mühendisliği Dönem Projesi*
