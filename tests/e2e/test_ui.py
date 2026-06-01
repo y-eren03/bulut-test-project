@@ -45,7 +45,7 @@ def test_complete_task(page: Page):
     page.click("button:has-text('Ekle')")
 
     # Sadece yeni eklediğimiz "Complete Me" görevinin yanındaki "Tamamla" butonuna tıkla
-    task_item = page.locator(".task", has_text="Complete Me").last
+    task_item = page.locator(".task", has_text="Complete Me").first
     task_item.locator("button:has-text('Tamamla')").click()
 
     # Görevin css class'ının .completed içerdiğini kontrol et

@@ -4,6 +4,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy import func
 import os
 import tempfile
 from prometheus_fastapi_instrumentator import Instrumentator
@@ -38,6 +39,7 @@ templates = Jinja2Templates(directory="src/templates")
 
 # Her HTTP isteği (request) için veritabanı oturumu oluşturur ve sonunda kapatır
 def get_db():
+    """Her HTTP isteği için yeni bir veritabanı oturumu oluşturur ve iş bitiminde kapatır."""
     db = SessionLocal()
     try:
         yield db
@@ -161,12 +163,14 @@ def add_attachment(
 
 
 def parse_tags(tags: str = None):
+    """Virgülle ayrılmış etiket stringini temizleyip bir listeye dönüştürür."""
     if not tags:
         return []
     return [tag.strip() for tag in tags.split(",") if tag.strip()]
 
 
 def serialize_task(task: models.Task):
+    """Veritabanı görev nesnesini JSON formatına uygun bir sözlüğe (dict) çevirir."""
     return {
         "id": task.id,
         "title": task.title,

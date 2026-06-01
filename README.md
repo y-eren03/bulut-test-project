@@ -2,7 +2,11 @@
 
 Bulut Mimarilerinde Test Mühendisliği dersi için geliştirilmiş, test odaklı ve bulut tabanlı bir mikroservis projesidir. Bu proje, uçtan uca test süreçlerini (Unit, Integration, E2E), CI/CD pipeline'ını ve performans izleme (Monitoring) altyapısını içerir.
 
-## 🚀 Teknolojiler ve Araçlar
+## Üye listesi
+- Yusuf Eren ÇELEBİ (170424826)
+- MHD DIAA ALSEBAI (170423954)
+
+## Teknolojiler ve Araçlar
 
 - **Backend:** FastAPI (Python), SQLAlchemy
 - **Veritabanı:** PostgreSQL, SQLite (Testler için)
@@ -14,7 +18,7 @@ Bulut Mimarilerinde Test Mühendisliği dersi için geliştirilmiş, test odakl�
 - **Dağıtım & Konteyner:** Docker, Docker Compose, Kubernetes (Minikube)
 - **CI/CD:** GitHub Actions
 
-## 📦 Kurulum ve Çalıştırma
+## Kurulum ve Çalıştırma
 
 ### Gereksinimler
 - Docker & Docker Compose
@@ -35,7 +39,7 @@ docker-compose up -d
 poetry install
 ```
 
-## 🧪 Testlerin Çalıştırılması
+## Testlerin Çalıştırılması
 
 Proje %80 üzerinde test coverage oranına sahiptir. Testleri çalıştırmak için aşağıdaki komutları kullanabilirsiniz:
 
@@ -61,7 +65,7 @@ python -m poetry run pytest tests/e2e -v
 k6 run perf/load-test.js
 ```
 
-## ☸️ Kubernetes (Minikube) Dağıtımı
+## Kubernetes (Minikube) Dağıtımı
 
 Uygulamayı Minikube üzerinde çalıştırmak için:
 ```bash
@@ -78,7 +82,7 @@ kubectl apply -f k8s/
 kubectl get pods
 ```
 
-## 🔄 CI/CD (GitHub Actions)
+## CI/CD (GitHub Actions)
 Projeye yapılan her `push` ve `pull_request` işlemi GitHub Actions tarafından otomatik olarak test edilir.
 Adımlar:
 1. `black` ile kod formatlama kontrolü
@@ -86,7 +90,7 @@ Adımlar:
 3. Newman ile Postman API testleri
 4. Docker imajının build edilmesi
 
-## 🎥 Canlı Demo Videosu
+## Canlı Demo Videosu
 Sunum yedek videosu eklenecektir: [Video Linki Buraya Gelecek]
 
 ---

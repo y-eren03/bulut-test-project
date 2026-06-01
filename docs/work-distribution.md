@@ -2,7 +2,7 @@
 
 ## Üyeler
 - Yusuf Eren ÇELEBİ (170424826) — Tech Lead, Repo Sahibi + CI/CD + Backend
-- MHD DİA  — Frontend + DB
+- MHD DIAA ALSEBAI (170423954)  — Frontend + DB
 
 ## Modül Sorumluluğu
 | Modül | Sorumlu | Yardımcı |
