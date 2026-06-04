@@ -12,7 +12,7 @@ from . import models
 from .observability import setup_observability
 from src.services.s3 import upload_file
 
-# Demo Mesajı 20
+# Demo Mesajı 2
 # DB bağlantı URL'si (Çevresel değişkenden veya varsayılan SQLite)
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./todos.db")
 
