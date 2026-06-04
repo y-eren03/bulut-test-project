@@ -14,8 +14,8 @@ Bulut Mimarilerinde Test Mühendisliği dersi için geliştirilmiş, test odakl�
 - **Test Araçları:** Pytest, Playwright (E2E), Testcontainers, Factory-Boy, Faker
 - **API Testleri:** Postman & Newman
 - **Performans Testi:** k6
-- **Monitoring:** Prometheus, Grafana
-- **Dağıtım & Konteyner:** Docker, Docker Compose, Kubernetes (Minikube)
+- **Monitoring & Tracing:** Prometheus, Grafana, OpenTelemetry, Jaeger
+- **Dağıtım, Konteyner & GitOps:** Docker, Docker Compose, Kubernetes (Minikube), Helm, ArgoCD
 - **CI/CD:** GitHub Actions
 
 ## Kurulum ve Çalıştırma
@@ -38,6 +38,22 @@ docker-compose up -d
 ```bash
 poetry install
 ```
+
+## Canlı Demo / Sunum İçin Hızlı Başlangıç
+
+Sunum veya demo esnasında tüm sistemi ve ArgoCD arayüzünü hızlıca ayağa kaldırmak için sırasıyla şu komutları çalıştırın:
+
+```bash
+# 1. Uygulama ve metrik servislerini arka planda başlat
+docker-compose up -d
+
+# 2. (Gerekliyse) ArgoCD namespace'ini oluştur
+kubectl create namespace argocd
+
+# 3. ArgoCD arayüzüne erişim için port yönlendirmesini başlat
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+```
+*Bu komutları çalıştırdıktan sonra uygulamanıza `http://localhost:8000`, ArgoCD arayüzüne ise `https://localhost:8080` adreslerinden erişebilirsiniz.*
 
 ## Testlerin Çalıştırılması
 
